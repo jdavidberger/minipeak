@@ -21,3 +21,21 @@ generate_spv_headers(spv_headers
 message("Headers: ${spv_headers}")
 create_app(vkminipeak minipeak-helpers-vk z)
 set_property(SOURCE vkminipeak.cpp APPEND PROPERTY OBJECT_DEPENDS ${spv_headers})
+
+execute_process(
+  COMMAND uname -r
+  OUTPUT_VARIABLE KERNEL_RELEASE
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+find_path(KERNELHEADERS_DIR
+  linux/user.h
+  PATHS /usr/src/linux-headers-${KERNEL_RELEASE}/include /lib/modules/${KERNEL_RELEASE}/build/include
+)
+
+if(KERNELHEADERS_DIR)
+  add_executable(panfrost_drmDump panfrost_drmDump.c)
+  target_compile_definitions(panfrost_drmDump PUBLIC -D__user=)
+  target_link_libraries(panfrost_drmDump drm)
+  target_include_directories(panfrost_drmDump PUBLIC ${KERNELHEADERS_DIR}/uapi/drm)
+endif()
