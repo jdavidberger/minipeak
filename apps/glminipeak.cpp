@@ -252,8 +252,6 @@ int main(int argc, char **argv) {
     printf("Invocations size %d\n", maxInvocations);
     printf("Work group size  %d %d %d\n", workGroupSizes[0], workGroupSizes[1], workGroupSizes[2]);
     printf("Work group count %d %d %d\n", workGroupCounts[0], workGroupCounts[1], workGroupCounts[2]);
-
-    printf("Local size %d\n", localSize);
      
     GLint n = 0;
     glGetIntegerv(GL_NUM_EXTENSIONS, &n);
@@ -268,7 +266,8 @@ int main(int argc, char **argv) {
         glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, false);
     }
 
-    uint64_t globalWIs = 256 * 256 * 32;
+    uint64_t globalWIs = (workGroupCounts[0]) / 8 * localSize;
+    printf("Running size %d / %d\n", globalWIs, localSize);
 
     auto buffer = GLSLBuffer('f', globalWIs, 1, 1, BufferInfo_t::usage_t::intermediate);
     std::vector<uint8_t> d;
@@ -282,8 +281,6 @@ int main(int argc, char **argv) {
             {"float", float_header},
             {"int", int_header},	    
     };
-
-
     
     auto sources = std::vector<std::pair<std::string, std::string>> {
             {"compute_sp_v1", compute_sp_v1},
