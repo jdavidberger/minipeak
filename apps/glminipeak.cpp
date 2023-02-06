@@ -198,9 +198,9 @@ void compute_sp_v16()
 )18e3c792b59";
 
 int main(int argc, char **argv) {
-  int localSize = 256;
+  uint64_t localSize = 256;
   if(argc > 1) {
-    localSize = atol(argv[1]);
+    localSize = atoll(argv[1]);
   }
     glfwSetErrorCallback(error_cb);
     if (!glfwInit()) {
@@ -266,8 +266,9 @@ int main(int argc, char **argv) {
         glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, false);
     }
 
-    uint64_t globalWIs = (workGroupCounts[0]) / 8 * localSize;
-    printf("Running size %d / %d\n", globalWIs, localSize);
+    uint64_t workGroupCount_target = std::min(workGroupCounts[0] / 8, 256*256*32);
+    uint64_t globalWIs = (uint64_t)(workGroupCount_target) * localSize;
+    printf("Running size %lu / %d\n", globalWIs, localSize);
 
     auto buffer = GLSLBuffer('f', globalWIs, 1, 1, BufferInfo_t::usage_t::intermediate);
     std::vector<uint8_t> d;

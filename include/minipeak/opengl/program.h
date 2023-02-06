@@ -38,7 +38,7 @@ struct GLSLProgram {
     }
     void draw(GLenum mode, GLsizei count);
     void draw();
-    void dispatch(int x = 1, int y = 1, int z = 1);
+    void dispatch(uint64_t x = 1, uint64_t y = 1, uint64_t z = 1);
     void sync();
 
     void write_texture(int width, int height, const void* data);

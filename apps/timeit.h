@@ -23,6 +23,6 @@ struct Timeit {
     ~Timeit() {
         auto end = std::chrono::_V2::system_clock::now();
         float hz = (float) (cnt) / ((std::chrono::duration<float>) (end - start)).count();
-        printf("%-48s %12.3f %s %8.3fms\n", name.c_str(), hz * scale, hz_label.c_str(), 1000. / hz);
+        printf("%-48s %12.3f %s %8.3fms %d iterations\n", name.c_str(), hz * scale, hz_label.c_str(), 1000. / hz, cnt);
     }
 };

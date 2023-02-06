@@ -65,7 +65,7 @@ void GLSLProgram::sync() {
     while (waitReturn != GL_ALREADY_SIGNALED && waitReturn != GL_CONDITION_SATISFIED)
         waitReturn = glClientWaitSync(_sync, GL_SYNC_FLUSH_COMMANDS_BIT, 1000000);
 }
-void GLSLProgram::dispatch(int x, int y, int z) {
+void GLSLProgram::dispatch(uint64_t x, uint64_t  y, uint64_t z) {
     use();
 
     for(size_t i = 0;i < buffers.size();i++) {
