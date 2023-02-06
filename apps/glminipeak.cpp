@@ -2,15 +2,17 @@
 #include <GLFW/glfw3.h>
 #include <GL/glew.h>
 
+
 #include <iostream>
-#include <map>
-
-#include "zlib.h"
-#include "minipeak/gpu/BufferInfo.h"
-#include "minipeak/opengl/buffer.h"
-#include "minipeak/opengl/program.h"
-
+#include <chrono>
 #include "timeit.h"
+#include "zlib.h"
+#include <sstream>
+
+#include <minipeak/gpu/BufferInfo.h>
+#include <minipeak/opengl/buffer.h>
+#include <minipeak/opengl/program.h>
+#include <vector>
 
 bool ignore_debug = false;
 void DEBUGPROC(GLenum source,
@@ -40,11 +42,23 @@ void DEBUGPROC(GLenum source,
 void error_cb(int error_code, const char* description) {
     printf("glfw error %d %s\n", error_code, description);
 }
+
+static std::string int_header = R"18e3c792b59(
+#define DATATYPE int
+#define vec2 ivec2
+#define vec4 ivec4
+
+)18e3c792b59";
+
+static std::string float_header = R"18e3c792b59(
+#define DATATYPE float
+)18e3c792b59";
+
 static std::string header = R"18e3c792b59(
-#line 62
+#line 64
 // Avoiding auto-vectorize by using vector-width locked dependent code
 
-layout(local_size_x = 256) in;
+layout(local_size_x = LOCAL_SIZE_X) in;
 
 #undef MAD_4
 #undef MAD_16
@@ -77,22 +91,23 @@ struct vec16 {
 #define mad8(a,b,c) (VEC8_ADD(VEC8_MUL(a,b),c))
 #define mad16(a,b,c) (VEC16_ADD(VEC16_MUL(a,b),c))
 
-layout(location = 1) uniform float _A;
+layout(location = 1) uniform DATATYPE _A;
 
 #define SCALE 1e-10
 
 layout(std430, binding = 0) restrict writeonly buffer outbuffer {
-    float ptr[];
+    DATATYPE ptr[];
 };
 
 )18e3c792b59";
 
 static std::string compute_sp_v1 = R"18e3c792b59(
+#line 111
 void compute_sp_v1()
 {
     uint id = gl_GlobalInvocationID[0] + gl_GlobalInvocationID[1] * 256u + gl_GlobalInvocationID[2] * 256u * 256u;
-    float x = _A;
-    float y = float(id) * SCALE;
+    DATATYPE x = _A;
+    DATATYPE y = DATATYPE(float(id) * SCALE);
 
     for(int i=0; i<128; i++)
     {
@@ -104,11 +119,12 @@ void compute_sp_v1()
 )18e3c792b59";
 
 static std::string compute_sp_v2 = R"18e3c792b59(
+#line 128
 void compute_sp_v2()
 {
     uint id = gl_GlobalInvocationID[0] + gl_GlobalInvocationID[1] * 256u + gl_GlobalInvocationID[2] * 256u * 256u;
-    vec2 x = vec2(_A, (_A+1.0f));
-    vec2 y = vec2(id, id) * SCALE;
+    vec2 x = vec2(_A, (_A+DATATYPE(1)));
+    vec2 y = vec2((float(id) * SCALE), (float(id) * SCALE));
 
     for(int i=0; i<64; i++)
     {
@@ -120,11 +136,12 @@ void compute_sp_v2()
 )18e3c792b59";
 
 static std::string compute_sp_v4 = R"18e3c792b59(
+#line 145
 void compute_sp_v4()
 {
     uint id = gl_GlobalInvocationID[0] + gl_GlobalInvocationID[1] * 256u + gl_GlobalInvocationID[2] * 256u * 256u;
-    vec4 x = vec4(_A, (_A+1.0f), (_A+2.0f), (_A+3.0f));
-    vec4 y = vec4(id, id, id, id) * SCALE;
+    vec4 x = vec4(_A, (_A+DATATYPE(1)), (_A+DATATYPE(2)), (_A+DATATYPE(3)));
+    vec4 y = vec4((float(id) * SCALE), (float(id) * SCALE), (float(id) * SCALE), (float(id) * SCALE));
 
     for(int i=0; i<32; i++)
     {
@@ -136,11 +153,12 @@ void compute_sp_v4()
 )18e3c792b59";
 
 static std::string compute_sp_v8 = R"18e3c792b59(
+#line 162
 void compute_sp_v8()
 {
     uint id = gl_GlobalInvocationID[0] + gl_GlobalInvocationID[1] * 256u + gl_GlobalInvocationID[2] * 256u * 256u;
-    vec8 x = VEC8(_A, (_A+1.0f), (_A+2.0f), (_A+3.0f), (_A+4.0f), (_A+5.0f), (_A+6.0f), (_A+7.0f));
-    vec8 y = VEC8_S(float(id) * SCALE);
+    vec8 x = VEC8(_A, (_A+DATATYPE(1)), (_A+DATATYPE(2)), (_A+DATATYPE(3)), (_A+DATATYPE(4)), (_A+DATATYPE(5)), (_A+DATATYPE(6)), (_A+DATATYPE(7)));
+    vec8 y = VEC8_S(DATATYPE(float(id) * SCALE));
 
 
 #undef mad
@@ -157,12 +175,13 @@ void compute_sp_v8()
 )18e3c792b59";
 
 static std::string compute_sp_v16 = R"18e3c792b59(
+#line 184
 void compute_sp_v16()
 {
     uint id = gl_GlobalInvocationID[0] + gl_GlobalInvocationID[1] * 256u + gl_GlobalInvocationID[2] * 256u * 256u;
-    vec16 x = VEC16(_A, (_A+1.0f), (_A+2.0f), (_A+3.0f), (_A+4.0f), (_A+5.0f), (_A+6.0f), (_A+7.0f),
-    (_A+8.0f), (_A+9.0f), (_A+10.0f), (_A+11.0f), (_A+12.0f), (_A+13.0f), (_A+14.0f), (_A+15.0f));
-    vec16 y = VEC16_S(float(id) * SCALE);
+    vec16 x = VEC16(_A, (_A+DATATYPE(1)), (_A+DATATYPE(2)), (_A+DATATYPE(3)), (_A+DATATYPE(4)), (_A+DATATYPE(5)), (_A+DATATYPE(6)), (_A+DATATYPE(7)),
+    (_A+DATATYPE(8)), (_A+DATATYPE(9)), (_A+DATATYPE(10)), (_A+DATATYPE(11)), (_A+DATATYPE(12)), (_A+DATATYPE(13)), (_A+DATATYPE(14)), (_A+DATATYPE(15)));
+    vec16 y = VEC16_S(DATATYPE((float(id) * SCALE)));
 
 #undef mad
 #define mad mad16
@@ -179,6 +198,10 @@ void compute_sp_v16()
 )18e3c792b59";
 
 int main(int argc, char **argv) {
+  int localSize = 256;
+  if(argc > 1) {
+    localSize = atol(argv[1]);
+  }
     glfwSetErrorCallback(error_cb);
     if (!glfwInit()) {
         const char *error_msg = 0;
@@ -228,7 +251,9 @@ int main(int argc, char **argv) {
     glGetIntegerv(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &maxInvocations);
     printf("Invocations size %d\n", maxInvocations);
     printf("Work group size  %d %d %d\n", workGroupSizes[0], workGroupSizes[1], workGroupSizes[2]);
-    printf("Work group count %d %d %d\n", workGroupCounts[0], workGroupCounts[1], workGroupCounts[2]);    
+    printf("Work group count %d %d %d\n", workGroupCounts[0], workGroupCounts[1], workGroupCounts[2]);
+
+    printf("Local size %d\n", localSize);
      
     GLint n = 0;
     glGetIntegerv(GL_NUM_EXTENSIONS, &n);
@@ -243,9 +268,8 @@ int main(int argc, char **argv) {
         glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, false);
     }
 
-    uint64_t globalWIs = 256 * 256 * 256;
-    
-    int localSize = 256;
+    uint64_t globalWIs = 256 * 256 * 32;
+
     auto buffer = GLSLBuffer('f', globalWIs, 1, 1, BufferInfo_t::usage_t::intermediate);
     std::vector<uint8_t> d;
     d.resize(globalWIs*sizeof(float));
@@ -254,7 +278,14 @@ int main(int argc, char **argv) {
     }
     buffer.write(d.data());
 
-    auto sources = std::map<std::string, std::string> {
+    auto datatypes = std::vector<std::pair<std::string, std::string>> {
+            {"float", float_header},
+            {"int", int_header},	    
+    };
+
+
+    
+    auto sources = std::vector<std::pair<std::string, std::string>> {
             {"compute_sp_v1", compute_sp_v1},
             {"compute_sp_v2", compute_sp_v2},
             {"compute_sp_v4", compute_sp_v4},
@@ -262,44 +293,51 @@ int main(int argc, char **argv) {
             {"compute_sp_v16", compute_sp_v16},
     };
 
-    for(auto& k : sources) {
+    for(auto& dp : datatypes) {
+      for(auto& k : sources) {
 
         std::stringstream ss;
         ss << "#define KERNEL " << k.first << std::endl;
-
+	ss << "#define LOCAL_SIZE_X " << localSize << std::endl;	
         auto program = GLSLProgram({
-                                      compile_shader(k.first, {ss.str(), header, k.second, "void main() {" + k.first +"();}"})
-                              });
+	    compile_shader(k.first, {ss.str(), dp.second, header, k.second, "void main() {" + k.first +"();}"})
+	  });
         program.bind({buffer});
 
-        float A = -1e-5;
-        program.set_uniform(1, A);
-
+	if(dp.first == "float") {
+	  float A = -1e-5;
+	  program.set_uniform(1, A);
+	} else {
+	  int A = 1;
+	  program.set_uniform(1, A);
+	}
+	
         program.dispatch(globalWIs / localSize, 1, 1);
         program.sync();
         ignore_debug=1;
         buffer.read(d.data());
         ignore_debug=0;
-//        std::string fn = std::string("result-gl-") + k + ".bin";
-//        auto f = fopen(fn.c_str(), "w");
-//        fwrite(d.data(), d.size(), 1, f);
-//        fclose(f);
+	//        std::string fn = std::string("result-gl-") + k + ".bin";
+	//        auto f = fopen(fn.c_str(), "w");
+	//        fwrite(d.data(), d.size(), 1, f);
+	//        fclose(f);
 
         auto checksum = crc32(0, d.data(), d.size());
         printf("%08lx  ", checksum);
 
         for(int i = 0;i < 3;i++) {
-            program.dispatch(globalWIs / localSize, 1, 1);
-            program.sync();
+	  program.dispatch(globalWIs / localSize, 1, 1);
+	  program.sync();
         }
 
         {
-            Timeit t(k.first, 4096  * (double)(globalWIs) / 1e9f, "GFLOPs");
-            do {
-                program.dispatch(globalWIs / localSize, 1, 1);
-                program.sync();
-            } while(t.under(2));
+	  Timeit t(k.first + "_" + dp.first, 4096  * (double)(globalWIs) / 1e9f, "GFLOPs");
+	  do {
+	    program.dispatch(globalWIs / localSize, 1, 1);
+	    program.sync();
+	  } while(t.under(2));
         }
+      }
     }
 
     return 0;
