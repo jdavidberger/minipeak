@@ -8,8 +8,8 @@ function(create_app name mainlib)
     endif()
 endfunction()
 
-create_app(glminipeak helpers-gl z)
-create_app(clminipeak helpers-cl z)
+create_app(glminipeak minipeak-helpers-gl z)
+create_app(clminipeak minipeak-helpers-cl z)
 
 generate_spv_headers(spv_headers
         shaders/compute_sp_v1.glsl
@@ -19,5 +19,5 @@ generate_spv_headers(spv_headers
         shaders/compute_sp_v16.glsl
         )
 message("Headers: ${spv_headers}")
-create_app(vkminipeak helpers-vk z)
+create_app(vkminipeak minipeak-helpers-vk z)
 set_property(SOURCE vkminipeak.cpp APPEND PROPERTY OBJECT_DEPENDS ${spv_headers})

@@ -37,7 +37,7 @@ endmacro()
 
 find_program(GLSLC glslc)
 
-set(CREATE_HEADER_FILE ${CMAKE_CURRENT_SOURCE_DIR}/create_header.py)
+set(CREATE_HEADER_FILE ${CMAKE_CURRENT_SOURCE_DIR}/create_header.py CACHE PATH "" FORCE)
 macro(generate_spv_header input)
   get_filename_component(infile ${input} ABSOLUTE)
   get_filename_component(infile_dir ${fn} DIRECTORY)
@@ -46,7 +46,6 @@ macro(generate_spv_header input)
   SET(SPV_FILE "${CMAKE_CURRENT_SOURCE_DIR}/${infile_dir}/spv/${infile_name}.spv")
   SET(HDR_FILE "${CMAKE_CURRENT_BINARY_DIR}/generated/${infile_dir}/${infile_name}.spv.h")
   include_directories(${CMAKE_CURRENT_BINARY_DIR}/generated)
-  message("Generating spv ${SPV_FILE} -> ${HDR_FILE} from ${infile}")
 
   if(GLSLC)
       execute_process(COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_CURRENT_SOURCE_DIR}/${infile_dir}/.ignore RESULT_VARIABLE writeable)
@@ -62,14 +61,12 @@ macro(generate_spv_header input)
       endif()
   endif()
 
-  message("Generating (${infile_dir}) ${CMAKE_CURRENT_BINARY_DIR}/generated/${infile_dir}/${infile_name}.spv.h")
   add_custom_command(OUTPUT "${HDR_FILE}"
           COMMAND ${PYTHON}
           ARGS ${CREATE_HEADER_FILE} "${SPV_FILE}" "${HDR_FILE}"
           WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
           DEPENDS "${SPV_FILE}"
           COMMENT "Headerifying ${infile_name}")
-
 endmacro()
 
 macro(generate_spv_headers OUT_NAME)
@@ -78,7 +75,6 @@ macro(generate_spv_headers OUT_NAME)
     generate_spv_header(${fn})
     get_filename_component(infile_dir ${fn} DIRECTORY)
     get_filename_component(infile_name ${fn} NAME_WE)
-    message("Generating ${infile_dir} ${infile_name}")
     list(APPEND RTN ${CMAKE_CURRENT_BINARY_DIR}/generated/${infile_dir}/${infile_name}.spv.h)
   endforeach()
   SET(${OUT_NAME} ${RTN})
@@ -91,27 +87,27 @@ add_library(minipeak-helpers STATIC src/gpu/BufferInfo.cpp src/gpu/Buffer.cpp)
 target_include_directories(minipeak-helpers PUBLIC include)
 
 if(TARGET GLEW::GLEW)
-  add_library(helpers-gl STATIC src/opengl/program.cpp src/opengl/buffer.cpp)
-  target_link_libraries(helpers-gl GL GLEW::GLEW OpenGL::EGL glfw dl minipeak-helpers)
+  add_library(minipeak-helpers-gl STATIC src/opengl/program.cpp src/opengl/buffer.cpp)
+  target_link_libraries(minipeak-helpers-gl GL GLEW::GLEW OpenGL::EGL glfw dl minipeak-helpers)
 endif()
 
 find_package(Vulkan)
 if(TARGET Vulkan::Vulkan)
-  add_library(helpers-vk STATIC
+  add_library(minipeak-helpers-vk STATIC
           src/vulkan/Context.cpp
           src/vulkan/VBuffer.cpp
           )
-  target_link_libraries(helpers-vk glslang SPIRV Vulkan::Vulkan dl helpers-gl )
+  target_link_libraries(minipeak-helpers-vk glslang SPIRV Vulkan::Vulkan dl minipeak-helpers )
 endif()
 
 FIND_PACKAGE(OpenCL)
 IF(OpenCL_FOUND)
-  add_library(helpers-cl STATIC
+  add_library(minipeak-helpers-cl STATIC
           src/opencl/Context.cpp
           src/opencl/Buffer.cpp src/opencl/Kernel.cpp
           src/opencl/Node.cpp
           )
-  target_link_libraries(helpers-cl ${OpenCL_LIBRARY} minipeak-helpers dl )
+  target_link_libraries(minipeak-helpers-cl ${OpenCL_LIBRARY} minipeak-helpers dl )
 endif()
 
 add_subdirectory(apps)
