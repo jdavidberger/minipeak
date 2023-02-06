@@ -1,15 +1,11 @@
-//
-// Created by justin on 12/26/22.
-//
-
 #include <iostream>
 #include <cmath>
-#include <glslang/Public/ResourceLimits.h>
-#include <glslang/SPIRV/GlslangToSpv.h>
 #include "minipeak/vulkan/Context.h"
 #include "minipeak/vulkan/VBuffer.h"
 
-#include "glslang/Public/ShaderLang.h"
+//#include <glslang/Public/ResourceLimits.h>
+//#include <glslang/SPIRV/GlslangToSpv.h>
+//#include "glslang/Public/ShaderLang.h"
 
 static uint32_t getFamilyIndex(vk::raii::PhysicalDevice &PhysicalDevice) {
     std::vector<vk::QueueFamilyProperties> QueueFamilyProps = PhysicalDevice.getQueueFamilyProperties();

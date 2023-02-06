@@ -97,7 +97,7 @@ if(TARGET Vulkan::Vulkan)
           src/vulkan/Context.cpp
           src/vulkan/VBuffer.cpp
           )
-  target_link_libraries(minipeak-helpers-vk glslang SPIRV Vulkan::Vulkan dl minipeak-helpers )
+  target_link_libraries(minipeak-helpers-vk Vulkan::Vulkan dl minipeak-helpers )
 endif()
 
 FIND_PACKAGE(OpenCL)
