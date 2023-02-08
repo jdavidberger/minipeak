@@ -233,11 +233,18 @@ gl_ptr compile_shader(const std::string& name, const std::vector<std::string>& s
     buffers.push_back(preamble.c_str());
     lengths.push_back(preamble.size());
 
+    if(getenv("CR_DEBUG_SHADERS")) {
+      printf("// SHADER SOURCE: %s\n", name.c_str());
+    }
+
     for(auto& s : source) {
         buffers.push_back(s.c_str());
         lengths.push_back(s.size());
+	if(getenv("CR_DEBUG_SHADERS")) {
+	  printf("%s\n", s.c_str());
+	}
     }
-
+    
     glShaderSource(*shader, buffers.size(), buffers.data(), lengths.data());
     glCompileShader(*shader);
 
