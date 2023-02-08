@@ -34,6 +34,7 @@ struct GLSLBuffer : public GPUBuffer {
 
     GLSLBuffer() {}
     GLSLBuffer(const BufferInfo_t& info);
+    GLSLBuffer(const BufferInfo_t& info, bool persistent, bool bufferStorage, int flags);  
     GLSLBuffer(const GLSLBuffer&) = default;
     GLSLBuffer(GLSLBuffer&&) = default;
 

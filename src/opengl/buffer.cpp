@@ -17,12 +17,33 @@ static gl_ptr generate_buffer() {
     return gl_ptr(new GLuint (val), delete_buffer);
 }
 
+GLSLBuffer::GLSLBuffer(const BufferInfo_t& info, bool persistent, bool bufferStorage, int flags) : GPUBuffer(info) {
+    this->ptr = generate_buffer();
+    //printf("Generated %u for %s\n", *this->ptr, info.name.c_str());
+    glBindBuffer(target(), *ptr);
+    if(bufferStorage) {
+        glBufferStorage(target(), buffer_size(), 0, flags);
+
+	if(persistent) {
+	  this->mapped_ptr = glMapBufferRange(target(), 0, buffer_size(), flags);
+	  assert(this->mapped_ptr);
+	}
+
+    } else {
+      glBufferData(target(), (GLsizeiptrARB) buffer_size(), nullptr, flags);
+    }
+     
+    glBindBuffer(target(), 0);
+    assert(this->ptr);
+}
+
 GLSLBuffer::GLSLBuffer(const BufferInfo_t &info) : GPUBuffer(info) {
     this->ptr = generate_buffer();
     //printf("Generated %u for %s\n", *this->ptr, info.name.c_str());
     glBindBuffer(target(), *ptr);
 
-    bool persistent = (info.usage & BufferInfo_t::usage_t::host_available) == BufferInfo_t::usage_t::host_available ||
+    bool persistent =
+      (info.usage & BufferInfo_t::usage_t::host_available) == BufferInfo_t::usage_t::host_available ||
             (info.usage & BufferInfo_t::usage_t::input) == BufferInfo_t::usage_t::input ||
             (info.usage & BufferInfo_t::usage_t::output) == BufferInfo_t::usage_t::output;
     if(persistent) {
@@ -32,7 +53,7 @@ GLSLBuffer::GLSLBuffer(const BufferInfo_t &info) : GPUBuffer(info) {
         this->mapped_ptr = glMapBufferRange(target(), 0, buffer_size(), flags);
         assert(this->mapped_ptr);
     } else {
-        bool useBufferStorage = true;
+        bool useBufferStorage = false;
         if(useBufferStorage) {
             int flags = GL_MAP_READ_BIT | GL_MAP_WRITE_BIT;
             glBufferStorage(target(), buffer_size(), 0, flags);
@@ -41,8 +62,6 @@ GLSLBuffer::GLSLBuffer(const BufferInfo_t &info) : GPUBuffer(info) {
             if (info.usage == BufferInfo_t::usage_t::intermediate) {
                 type = GL_DYNAMIC_COPY;
             }
-
-            printf("Buffer data with type 0x%x for %s\n", type, info.name.c_str());
             glBufferData(target(), (GLsizeiptrARB) buffer_size(), nullptr, type);
         }
     }

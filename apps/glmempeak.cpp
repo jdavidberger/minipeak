@@ -68,7 +68,7 @@ void memread()
     float y = float(float(id) * SCALE);
 
     for(uint i = 0u;i < width*height;i++) {
-       y *= inptr[(i * access_stride) % (width*height)];
+       y *= inptr[(i * access_stride + id) % (width*height)];
     }
 
     ptr[id] = y;
@@ -148,22 +148,46 @@ int main(int argc, char **argv) {
     uint64_t globalWIs = 32 * localSize;//(uint64_t)(workGroupCount_target) * localSize;
     printf("Running size %lu / %d\n", globalWIs, localSize);
 
+    auto out_buffer = GLSLBuffer('f', globalWIs, 1, 1, BufferInfo_t::usage_t::intermediate);
+
     auto memaccess = std::vector<std::pair<std::string, int>> {
             {"linear", 1},
             {"random", 1223},
     };
 
-    auto usages = std::vector<std::pair<std::string, BufferInfo_t::usage_t>> {
-            {"intermediate", BufferInfo_t::usage_t::intermediate},
-            {"input", BufferInfo_t::usage_t::input},
-            {"output", BufferInfo_t::usage_t::output},
-            {"static", BufferInfo_t::usage_t::data_static},
+    GLint size;
+#define SHOW_STORAGE_SIZE(x) \
+    glGetIntegerv(x, &size);		\
+    printf("%-32s %.2fKb\n", #x, size / 1024.);
+
+    SHOW_STORAGE_SIZE(GL_MAX_SHADER_STORAGE_BLOCK_SIZE);
+    SHOW_STORAGE_SIZE(GL_MAX_TEXTURE_BUFFER_SIZE);
+    SHOW_STORAGE_SIZE(GL_MAX_TEXTURE_SIZE);    
+    SHOW_STORAGE_SIZE(GL_MAX_UNIFORM_BLOCK_SIZE);
+    SHOW_STORAGE_SIZE(GL_UNIFORM_BUFFER_SIZE);
+    
+#define GPU_FLAG(x) { #x, false, false, x}
+    auto usages = std::vector<std::tuple<std::string, bool, bool, int>> {
+      {"intermediate-buffer", false, true, GL_MAP_READ_BIT | GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT},
+      {"intermediate", false, false, GL_DYNAMIC_COPY},
+      {"input", true, true, GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT | GL_MAP_READ_BIT | GL_MAP_WRITE_BIT},
+      {"output", true, true, GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT | GL_MAP_READ_BIT | GL_MAP_WRITE_BIT},
+      {"static", false, false, GL_STATIC_DRAW},
+      GPU_FLAG(GL_STREAM_DRAW),
+      GPU_FLAG(GL_STREAM_READ),
+      GPU_FLAG(GL_STREAM_COPY),
+      GPU_FLAG(GL_STATIC_READ),
+      GPU_FLAG(GL_STATIC_COPY),
+      GPU_FLAG(GL_DYNAMIC_DRAW),
+      GPU_FLAG(GL_DYNAMIC_READ),
+      GPU_FLAG(GL_DYNAMIC_COPY),
     };
 
     int width = 512, height = 512;
 
     for(auto& k : usages) {
-        auto buffer = GLSLBuffer('f', 1, width, height, k.second);
+      auto name = std::get<0>(k);
+      auto buffer = GLSLBuffer(BufferInfo_t('f', 1, width, height), std::get<1>(k), std::get<2>(k), std::get<3>(k));
         std::vector<uint8_t> d;
         d.resize(buffer.buffer_size());
         for(auto&v : d) {
@@ -171,16 +195,16 @@ int main(int argc, char **argv) {
         }
         buffer.write(d.data());
         ignore_debug=true;
-        printf("%s:\n", k.first.c_str());
+        printf("%s:\n", name.c_str());
         {
-            Timeit t("\tread", width * height * 4 / 1e9f, "GBs");
+            Timeit t("\tread", width * height * 4  / 1024. / 1024., "MBs");
             do {
                 buffer.read(d.data());
             } while (t.under(1));
         }
 
         {
-            Timeit t("\twrite", width * height * 4 / 1e9f, "GBs");
+            Timeit t("\twrite", width * height * 4 / 1024. / 1024., "MBs");
             do {
                 buffer.write(d.data());
             } while (t.under(1));
@@ -191,10 +215,10 @@ int main(int argc, char **argv) {
             std::stringstream ss;
             ss << "#define LOCAL_SIZE_X " << localSize << std::endl;
             auto program = GLSLProgram({
-                                               compile_shader(k.first, {ss.str(), buffer.glsl_constants(), header, memread,
+                                               compile_shader(name, {ss.str(), buffer.glsl_constants(), header, memread,
                                                                         "void main() {memread();}"})
                                        });
-            program.bind({buffer});
+            program.bind({buffer, out_buffer});
 
             program.set_uniform(1, (GLuint)m.second);
 
@@ -207,7 +231,7 @@ int main(int argc, char **argv) {
             }
 
             {
-                Timeit t("\t" + m.first, width * height * 4 * (double) (globalWIs) / 1e9f, "GBs");
+                Timeit t("\t" + m.first, width * height * 4 * (double) (globalWIs) / 1024. / 1024., "MBs");
                 do {
                     program.dispatch(globalWIs / localSize, 1, 1);
                     program.sync();
