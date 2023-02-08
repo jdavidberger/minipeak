@@ -97,7 +97,7 @@ void GLSLProgram::set_uniform(int binding, bool value) {
 
 void GLSLProgram::set_uniform(int binding, GLuint value) {
     use();
-    glUniform1i(binding, value);
+    glUniform1ui(binding, value);
     glUseProgram(0);
 }
 

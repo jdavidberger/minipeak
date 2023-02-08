@@ -9,6 +9,7 @@ function(create_app name mainlib)
 endfunction()
 
 create_app(glminipeak minipeak-helpers-gl z)
+create_app(glmempeak minipeak-helpers-gl z)
 create_app(clminipeak minipeak-helpers-cl z)
 
 generate_spv_headers(spv_headers
