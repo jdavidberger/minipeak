@@ -1,7 +1,7 @@
 #define GLFW_INCLUDE_ES2
 #include <GLFW/glfw3.h>
 #include <GL/glew.h>
-
+#include <string.h>
 
 #include <iostream>
 #include <chrono>
@@ -169,6 +169,9 @@ int main(int argc, char **argv) {
     SHOW_STORAGE_SIZE(GL_MAX_TEXTURE_SIZE);    
     SHOW_STORAGE_SIZE(GL_MAX_UNIFORM_BLOCK_SIZE);
     SHOW_STORAGE_SIZE(GL_UNIFORM_BUFFER_SIZE);
+
+    glGetIntegerv(GL_MAX_COMPUTE_UNIFORM_BLOCKS, &size);
+    printf("%-32s %d\n", "GL_MAX_COMPUTE_UNIFORM_BLOCKS", size);
     
 #define GPU_FLAG(x) { #x, false, false, x}
     auto usages = std::vector<std::tuple<std::string, bool, bool, int>> {
@@ -189,14 +192,24 @@ int main(int argc, char **argv) {
 
     int width = 512, height = 512;
 
+    std::vector<uint8_t> d, d1;
+    d.resize(width*height*4);
+    d1.resize(width*height*4);
+    for(auto&v : d) {
+      v = 0xce;
+    }
+
+    {
+      Timeit t("Memcpy baseline", width * height * 4  / 1024. / 1024., "MBs");
+      do {
+	memcpy(d1.data(), d.data(), d.size());
+      } while (t.under(1));
+    }
+
+    
     for(auto& k : usages) {
       auto name = std::get<0>(k);
       auto buffer = GLSLBuffer(BufferInfo_t('f', 1, width, height), std::get<1>(k), std::get<2>(k), std::get<3>(k));
-        std::vector<uint8_t> d;
-        d.resize(buffer.buffer_size());
-        for(auto&v : d) {
-            v = 0xce;
-        }
         buffer.write(d.data());
         ignore_debug=true;
         printf("%s:\n", name.c_str());
