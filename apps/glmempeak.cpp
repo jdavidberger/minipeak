@@ -77,8 +77,12 @@ void memread()
 
 int main(int argc, char **argv) {
     uint64_t localSize = 256;
+    uint64_t globalMult = 32;
     if(argc > 1) {
         localSize = atoll(argv[1]);
+    }
+    if(argc > 2) {
+      globalMult = atoll(argv[2]);
     }
     glfwSetErrorCallback(error_cb);
     if (!glfwInit()) {
@@ -145,7 +149,7 @@ int main(int argc, char **argv) {
     }
 
     uint64_t workGroupCount_target = std::min(workGroupCounts[0] / 8, 256*256*32);
-    uint64_t globalWIs = 32 * localSize;//(uint64_t)(workGroupCount_target) * localSize;
+    uint64_t globalWIs = globalMult * localSize;//(uint64_t)(workGroupCount_target) * localSize;
     printf("Running size %lu / %d\n", globalWIs, localSize);
 
     auto out_buffer = GLSLBuffer('f', globalWIs, 1, 1, BufferInfo_t::usage_t::intermediate);
