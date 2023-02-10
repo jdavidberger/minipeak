@@ -19,7 +19,9 @@ namespace OCL {
         cl::Context context;
         std::vector<cl::Device> device;
 
+      static cl_mem_flags GetFlagFromUsage(BufferInfo_t::usage_t usage);
         std::shared_ptr<cl::Buffer> AllocBuffer(const BufferInfo_t& info);
+        std::shared_ptr<cl::Buffer> AllocBuffer(const BufferInfo_t& info, cl_mem_flags flags);
 
         ~Context();
         static std::shared_ptr<Context> Inst();

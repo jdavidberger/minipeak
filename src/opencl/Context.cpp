@@ -50,29 +50,36 @@ namespace OCL {
         return rtn;
     }
 
-    std::shared_ptr<cl::Buffer> Context::AllocBuffer(const BufferInfo_t &info) {
-        cl_mem_flags flags = 0;
-        if((info.usage & BufferInfo_t::usage_t::host_available) == BufferInfo_t::usage_t::host_available) {
-            flags |= CL_MEM_ALLOC_HOST_PTR;
-        }
-        if((info.usage & BufferInfo_t::usage_t::input) == BufferInfo_t::usage_t::input) {
-            flags |= CL_MEM_HOST_WRITE_ONLY | CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR;
-        }
-        if((info.usage & BufferInfo_t::usage_t::output) == BufferInfo_t::usage_t::output) {
-            flags |= CL_MEM_WRITE_ONLY | CL_MEM_HOST_READ_ONLY | CL_MEM_ALLOC_HOST_PTR;
-        }
-        if((info.usage & BufferInfo_t::usage_t::uniform) == BufferInfo_t::usage_t::uniform) {
-            flags |= CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY;
-        }
-        if (info.usage == BufferInfo_t::usage_t::intermediate) {
-            flags |= CL_MEM_READ_WRITE;
-        }
-
+    std::shared_ptr<cl::Buffer> Context::AllocBuffer(const BufferInfo_t &info, cl_mem_flags flags) {
         return std::make_shared<cl::Buffer>(context, flags, info.buffer_size());
+    }
+
+    std::shared_ptr<cl::Buffer> Context::AllocBuffer(const BufferInfo_t &info) {
+        return AllocBuffer(info, GetFlagFromUsage(info.usage));
     }
 
     Context::~Context() {
 
+    }
+
+    cl_mem_flags Context::GetFlagFromUsage(BufferInfo_t::usage_t usage) {
+        cl_mem_flags flags = 0;
+        if((usage & BufferInfo_t::usage_t::host_available) == BufferInfo_t::usage_t::host_available) {
+            flags |= CL_MEM_ALLOC_HOST_PTR;
+        }
+        if((usage & BufferInfo_t::usage_t::input) == BufferInfo_t::usage_t::input) {
+            flags |= CL_MEM_HOST_WRITE_ONLY | CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR;
+        }
+        if((usage & BufferInfo_t::usage_t::output) == BufferInfo_t::usage_t::output) {
+            flags |= CL_MEM_WRITE_ONLY | CL_MEM_HOST_READ_ONLY | CL_MEM_ALLOC_HOST_PTR;
+        }
+        if((usage & BufferInfo_t::usage_t::uniform) == BufferInfo_t::usage_t::uniform) {
+            flags |= CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY;
+        }
+        if (usage == BufferInfo_t::usage_t::intermediate) {
+            flags |= CL_MEM_READ_WRITE;
+        }
+        return flags;
     }
 
 #define CaseReturnString(x) case x: return #x;

@@ -7,10 +7,14 @@ namespace OCL {
     class Buffer : public GPUBuffer {
         std::shared_ptr<Context> context;
     public:
+        bool host_can_read() const;
+        bool host_can_write() const;
         bool is_host_accessible() const;
 
         std::shared_ptr<cl::Buffer> b;
         Buffer(const BufferInfo_t& info);
+        Buffer(const BufferInfo_t& info, cl_mem_flags flags);
+
         template <typename... Args>
         Buffer(Args... args) : Buffer(BufferInfo_t(args...)) {}
 

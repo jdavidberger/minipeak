@@ -6,6 +6,10 @@ OCL::Buffer::Buffer(const BufferInfo_t &info) : GPUBuffer(info), context(Context
     b = context->AllocBuffer(info);
 }
 
+OCL::Buffer::Buffer(const BufferInfo_t &info, cl_mem_flags flags) : GPUBuffer(info), context(Context::Inst()) {
+    b = context->AllocBuffer(info, flags);
+}
+
 std::shared_ptr<GPUBuffer> OCL::Buffer::clone() const {
     return std::shared_ptr<GPUBuffer>();
 }
@@ -72,4 +76,19 @@ bool OCL::Buffer::is_host_accessible() const {
     auto flags = b->getInfo<CL_MEM_FLAGS>();
     return (flags & CL_MEM_HOST_NO_ACCESS) != CL_MEM_HOST_NO_ACCESS;
 }
+
+bool OCL::Buffer::host_can_read() const {
+    auto flags = b->getInfo<CL_MEM_FLAGS>();
+    if(flags&CL_MEM_HOST_WRITE_ONLY) return false;
+
+    return (flags & CL_MEM_HOST_NO_ACCESS) != CL_MEM_HOST_NO_ACCESS;
+}
+
+bool OCL::Buffer::host_can_write() const {
+    auto flags = b->getInfo<CL_MEM_FLAGS>();
+    if(flags&CL_MEM_HOST_READ_ONLY) return false;
+
+    return (flags & CL_MEM_HOST_NO_ACCESS) != CL_MEM_HOST_NO_ACCESS;
+}
+
 
