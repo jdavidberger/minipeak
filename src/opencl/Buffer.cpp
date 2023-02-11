@@ -3,11 +3,17 @@
 #include "sstream"
 
 OCL::Buffer::Buffer(const BufferInfo_t &info) : GPUBuffer(info), context(Context::Inst()) {
-    b = context->AllocBuffer(info);
+    if(info.type == 'h' && !context->has_half()) {
+        this->info.type = 'f';
+    }
+    b = context->AllocBuffer(this->info);
 }
 
 OCL::Buffer::Buffer(const BufferInfo_t &info, cl_mem_flags flags) : GPUBuffer(info), context(Context::Inst()) {
-    b = context->AllocBuffer(info, flags);
+    if(info.type == 'h' && !context->has_half()) {
+        this->info.type = 'f';
+    }
+    b = context->AllocBuffer(this->info, flags);
 }
 
 std::shared_ptr<GPUBuffer> OCL::Buffer::clone() const {
@@ -65,6 +71,7 @@ std::string OCL::Buffer::cl_constants(const std::string &prefix, int vec_size) c
     auto w = info.w;
     auto h = info.h;
 
+    ss << "#define CR" << prefix << "_DATATYPE_IS_" << info.cl_type(vec_size) << " 1" << std::endl;
     ss << "#define convert_" << prefix << " convert_" << info.cl_type(vec_size) << std::endl;
     ss << "#define " << prefix << "channels ((ushort)" << c << "u)" << std::endl;
     ss << "#define " << prefix << "width ((ushort)" << (w/vec_size) << "u)" << std::endl;

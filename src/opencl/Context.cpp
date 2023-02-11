@@ -82,6 +82,10 @@ namespace OCL {
         return flags;
     }
 
+    bool Context::has_half() const {
+        return device[0].getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_HALF>() != 0;
+    }
+
 #define CaseReturnString(x) case x: return #x;
 
 const char *errstr(cl_int err)

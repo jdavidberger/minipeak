@@ -18,6 +18,7 @@ namespace OCL {
         cl::CommandQueue queue;
         cl::Context context;
         std::vector<cl::Device> device;
+        bool has_half() const;
 
       static cl_mem_flags GetFlagFromUsage(BufferInfo_t::usage_t usage);
         std::shared_ptr<cl::Buffer> AllocBuffer(const BufferInfo_t& info);
