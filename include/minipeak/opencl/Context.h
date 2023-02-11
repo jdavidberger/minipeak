@@ -6,6 +6,7 @@
 #define CL_HPP_ENABLE_EXCEPTIONS 1
 #include <CL/cl2.hpp>
 #include "minipeak/gpu/BufferInfo.h"
+#include "minipeak/gpu/PlatformSettings.h"
 
 namespace OCL {
   const char *errstr(cl_int err);
@@ -15,6 +16,9 @@ namespace OCL {
         Context();
 
     public:
+
+        PlatformSettings platformSettings;
+
         cl::CommandQueue queue;
         cl::Context context;
         std::vector<cl::Device> device;
@@ -24,6 +28,7 @@ namespace OCL {
         std::shared_ptr<cl::Buffer> AllocBuffer(const BufferInfo_t& info);
         std::shared_ptr<cl::Buffer> AllocBuffer(const BufferInfo_t& info, cl_mem_flags flags);
 
+        std::string platform_name() const;
         ~Context();
         static std::shared_ptr<Context> Inst();
     };

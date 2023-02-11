@@ -161,6 +161,7 @@ std::string GLSLBuffer::glsl_constants(const std::string& prefix, int vec_size) 
     auto c = info.c;
     auto w = info.w;
     auto h = info.h;
+    ss << "#define CR" << prefix << "_DATATYPE_IS_" << glsl_type(vec_size) << " 1" << std::endl;
     ss << "#define convert_" << prefix << " " << glsl_type(vec_size) << std::endl;
     ss << "#define " << prefix << "channels " << c << "u" << std::endl;
     ss << "#define " << prefix << "width " << (w/vec_size) << "u" << std::endl;

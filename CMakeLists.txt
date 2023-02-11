@@ -83,7 +83,7 @@ endmacro()
 include_directories(${CMAKE_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/filters/shaders)
 
-add_library(minipeak-helpers STATIC src/gpu/BufferInfo.cpp src/gpu/Buffer.cpp)
+add_library(minipeak-helpers STATIC src/gpu/BufferInfo.cpp src/gpu/Buffer.cpp src/gpu/PlatformSettings.cpp)
 target_include_directories(minipeak-helpers PUBLIC include)
 
 if(TARGET GLEW::GLEW)

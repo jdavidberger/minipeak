@@ -5,6 +5,7 @@
 #include <iostream>
 #include "minipeak/opencl/Node.h"
 #include "numeric"
+#include "CL/cl_ext.h"
 
 void OCL::Node::operator()() {
     try {
@@ -17,6 +18,10 @@ void OCL::Node::operator()() {
 
 cl::NDRange OCL::Node::work_size() const {
     if(cache_ws[0] != 0) return cache_ws;
+
+#ifdef cl_khr_suggested_local_work_size
+aef
+#endif
 
     auto run_size = global_size();
     auto max_local_size = std::min(512ul, context->device[0].getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>());

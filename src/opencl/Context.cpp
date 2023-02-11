@@ -1,6 +1,11 @@
 #include "minipeak/opencl/Context.h"
+#include "minipeak/gpu/PlatformSettings.h"
 #include <stdio.h>
 #include <iostream>
+
+static PlatformSettingsFactory factory( all_platform_settings_t ({
+    { "pthread-cortex-a53", {{"use-half", false}}}
+}));
 
 namespace OCL {
     std::weak_ptr<Context> Context::g;
@@ -9,7 +14,7 @@ namespace OCL {
         std::vector<cl::Platform> platform;
         cl::Platform::get(&platform);
 
-	std::cout << platform.size() << " platforms found " << std::endl;
+        std::cout << platform.size() << " platforms found " << std::endl;
         for(auto p = platform.begin(); p != platform.end(); p++) {
             std::vector<cl::Device> pldev;
             std::cout << p->getInfo<CL_PLATFORM_NAME>() << std::endl;
@@ -39,6 +44,8 @@ namespace OCL {
         std::cout << device[0].getInfo<CL_DEVICE_NAME>() << " choosen" << std::endl;
         context = cl::Context(device[0]);
         queue = cl::CommandQueue(context, device[0]);
+
+        platformSettings = factory(platform_name());
     }
 
     std::shared_ptr<Context> Context::Inst() {
@@ -77,13 +84,17 @@ namespace OCL {
             flags |= CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY;
         }
         if (usage == BufferInfo_t::usage_t::intermediate) {
-	  flags |= 0;
+            flags |= 0;
         }
         return flags;
     }
 
     bool Context::has_half() const {
-        return device[0].getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_HALF>() != 0;
+        return platformSettings("use-half", device[0].getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_HALF>() != 0);
+    }
+
+    std::string Context::platform_name() const {
+        return device[0].getInfo<CL_DEVICE_NAME>();
     }
 
 #define CaseReturnString(x) case x: return #x;

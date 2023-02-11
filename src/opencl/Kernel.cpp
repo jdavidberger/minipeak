@@ -7,7 +7,7 @@ OCL::Kernel::Kernel(const std::string &name, const std::vector<std::string> &sou
     program = cl::Program(context->context, sources);
 
     try {
-        program.build({context->device[0]});
+        program.build({context->device[0]}, "-cl-fast-relaxed-math");
     } catch (const cl::Error &error) {
         std::cerr << "Encountered " << OCL::errstr(error.err()) << " during " << error.what() << " for " << name
                   << std::endl;
