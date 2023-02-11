@@ -16,6 +16,7 @@ BufferInfo_t::usage_t operator & (const BufferInfo_t::usage_t lhs, const BufferI
 
 size_t BufferInfo_t::type_size() const {
     switch(type) {
+    case 'h':
         case 's':
             return 2;
         case 'b':
@@ -24,7 +25,7 @@ size_t BufferInfo_t::type_size() const {
             return sizeof(float);
         case 'd':
             return sizeof(double);
-        default:
+        default:	  
             assert(false);
             return 1;
     }
@@ -44,6 +45,8 @@ std::string BufferInfo_t::cl_type(int vec_size) const {
                 return "short";
             case 'b':
                 return "unsigned char";
+	case 'h':
+	  return "half";
             case 'f':
                 return "float";
             case 'd':

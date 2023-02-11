@@ -150,6 +150,9 @@ int main() {
     globalSize = globalWIs;
     localSize = devInfo.maxWGSize;
 
+    for(int i = 0;i < 3;i++) {
+      std::cout << "Run size " << globalSize[i] << " " << localSize[i] << std::endl;
+    }
     auto kernels = {"compute_sp_v1", "compute_sp_v2", "compute_sp_v4", "compute_sp_v8", "compute_sp_v16"};
     for(auto& k : kernels) {
         auto kernel = OCL::Kernel(k, {source}, {buffer});

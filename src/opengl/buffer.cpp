@@ -75,14 +75,15 @@ void GLSLBuffer::read(void *dst) const{
     if(this->mapped_ptr) {
         memcpy(dst, this->mapped_ptr, buffer_size());
     } else {
-        glBindBuffer(target(), *ptr);
-        //glGetBufferSubData(target(), 0, buffer_size(), dst);
-        //void *src = glMapBuffer(target(), GL_READ_ONLY);
-        void *src = glMapBufferRange(target(), 0, buffer_size(), GL_MAP_READ_BIT);
-        if(src) {
-            memcpy(dst, src, buffer_size());
-            glUnmapBuffer(target());
-        }
+      glBindBuffer(target(), *ptr);
+      //glGetBufferSubData(target(), 0, buffer_size(), dst);
+      //void *src = glMapBuffer(target(), GL_MAP_READ_BIT);
+      void *src = glMapBufferRange(target(), 0, buffer_size(), GL_MAP_READ_BIT);
+      if(src) {
+	memcpy(dst, src, buffer_size());
+	glUnmapBuffer(target());
+      }
+
         glBindBuffer(target(), 0);
     }
 }

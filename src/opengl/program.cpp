@@ -63,7 +63,7 @@ void GLSLProgram::sync() {
     GLenum waitReturn = GL_UNSIGNALED;
 
     while (waitReturn != GL_ALREADY_SIGNALED && waitReturn != GL_CONDITION_SATISFIED)
-        waitReturn = glClientWaitSync(_sync, GL_SYNC_FLUSH_COMMANDS_BIT, 1000000);
+        waitReturn = glClientWaitSync(_sync, GL_SYNC_FLUSH_COMMANDS_BIT, 10000000);
 }
 void GLSLProgram::dispatch(uint64_t x, uint64_t  y, uint64_t z) {
     use();

@@ -48,6 +48,7 @@ int main(int argc, char **argv) {
             CL_USAGE_FLAG(input),
             CL_USAGE_FLAG(output),
             CL_USAGE_FLAG(uniform),
+            CL_USAGE_FLAG(host_available),	    
             //CL_USAGE_FLAG(static),
     };
 
@@ -64,7 +65,9 @@ int main(int argc, char **argv) {
         if(buffer.host_can_write())
             buffer.write(d.data());
 
-        printf("%s:\n", name.c_str());
+	auto flags = buffer.b->getInfo<CL_MEM_FLAGS>();
+        printf("%s: (flags 0x%x) \n", name.c_str(), flags);
+	
         if(buffer.host_can_read())
         {
             Timeit t("\tread", width * height * 4  / 1024. / 1024., "MBs");

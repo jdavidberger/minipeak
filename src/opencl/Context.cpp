@@ -77,7 +77,7 @@ namespace OCL {
             flags |= CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY;
         }
         if (usage == BufferInfo_t::usage_t::intermediate) {
-            flags |= CL_MEM_READ_WRITE;
+	  flags |= 0;
         }
         return flags;
     }
