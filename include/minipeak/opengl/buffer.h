@@ -41,10 +41,12 @@ struct GLSLBuffer : public GPUBuffer {
     GLSLBuffer& operator=(const GLSLBuffer&) = default;
 
     std::string glsl_type(int vec = 1) const;
+    std::string work_type(int vec = 1) const;  
 
     void read(void* dst) const override;
     void write(const void* src) override;
 
+    std::string glsl_constants(int vec = 1) const { return glsl_constants("", vec); }
     std::string glsl_constants(const std::string& prefix = "", int vec = 1) const;
 
     GLuint operator*() const { return *ptr; }

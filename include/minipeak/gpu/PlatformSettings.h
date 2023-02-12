@@ -2,6 +2,7 @@
 
 #include <map>
 #include <variant>
+#include <string>
 
 typedef std::map<std::string, std::variant<float, int, std::string>> platform_settings_t;
 class PlatformSettings {

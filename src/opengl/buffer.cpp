@@ -125,43 +125,67 @@ std::string GLSLBuffer::glsl_type(int vec) const {
             }
             return "float";
         case 'd': return "double";
-        default: assert(false); return "void"; break;
+        default: assert(false);
+	  return "void"; break;
     }
 }
 
-std::string GLSLBuffer::glsl_constants(const std::string& prefix, int vec_size) const {
+std::string GLSLBuffer::work_type(int vec) const {
+    std::string input_type;
+    //assert(vec == 1 || info.type == 'f');
+    switch(info.type) {
+        case 's':
+            if(vec > 1) {
+                return "ivec" + std::to_string(vec);
+            }
+            return has_int16 ? "int16_t" : "int";
+        case 'b': return "unsigned char";
+        case 'f':
+            if(vec > 1) {
+                return "vec" + std::to_string(vec);
+            }
+            return "float";
+        case 'd': return "double";
+        default: assert(false);
+	  return "void"; break;
+    }
+}
+
+std::string GLSLBuffer::glsl_constants(const std::string& _prefix, int vec_size) const {
     auto order = info.order;
     auto type = info.type;
+
+    auto prefix = _prefix;
+    if(!prefix.empty() && prefix[prefix.size()-1] != '_')
+      prefix = prefix + "_";
 
     if ((info.w % vec_size) != 0) {
         throw std::runtime_error("Invalid vectorization size");
     }
 
-    std::stringstream ss;
-    ss << "#define " << prefix << "dtype " << glsl_type(vec_size) << std::endl;
-    ss << "#define " << prefix << "order " << (int)order << std::endl;
-    if(order == order_t::CHW) {
-        if(type=='s' && !has_int16) {
-            ss << "#define ACCESS16(d,idx) ((d[(idx)/2u] >> (16u*(((idx))%2u))) & 0xffff)" << std::endl;
-            ss << "#define " << prefix << "FLAT_ACCESS_IDX(c,x,y) (uint(uint(c) * (" << prefix << "width * " << prefix
-               << "height) + uint(x) * (" << prefix << "width) + uint(y)))" << std::endl;
-
-            ss << "#define " << prefix << "FLAT_ACCESS(d,c,x,y) ACCESS16(d, "<< prefix << "FLAT_ACCESS_IDX(c,x,y))" << std::endl;
-        } else {
-            ss << "#define " << prefix << "ACCESS(d,c,x,y) d[c][x][y]" << std::endl;
-            ss << "#define " << prefix << "FLAT_ACCESS_1D(d,c,xy) d[uint(uint(c) * (" << prefix << "width * " << prefix
-               << "height) + uint(xy))]" << std::endl;
-            ss << "#define " << prefix << "FLAT_ACCESS(d,c,x,y) d[uint(uint(c) * (" << prefix << "width * " << prefix
-               << "height) + uint(x) * (" << prefix << "width) + uint(y))]" << std::endl;
-        }
-    } else {
-        ss << "#define " << prefix << "ACCESS(d,c,x,y) d[x][y][c]" << std::endl;
-        ss << "#define " << prefix << "FLAT_ACCESS(d,c,x,y) d[uint(uint(x) * ("<< prefix <<"width * "<< prefix <<"channels) + uint(y) * ("<< prefix <<"channels) + uint(c))]" << std::endl;
-    }
     auto c = info.c;
     auto w = info.w;
     auto h = info.h;
-    ss << "#define CR" << prefix << "_DATATYPE_IS_" << glsl_type(vec_size) << " 1" << std::endl;
+
+    std::stringstream info_line;
+    info_line << "d,c,x,y," << (int)info.order << "," << c << "u," << w << "u," << h <<"u";
+    
+    std::string vec_str = vec_size == 1 ? "" : std::to_string(vec_size);
+    std::string type_str = std::string(1, info.type) + vec_str;
+    std::stringstream ss;
+    ss << "#define " << prefix << "work_dtype " << work_type(vec_size) << std::endl;    
+    ss << "#define " << prefix << "dtype " << glsl_type(vec_size) << std::endl;
+    ss << "#define " << prefix << "vec_size " << vec_size << std::endl;    
+    ss << "#define " << prefix << "order " << (int)order << std::endl;
+    ss << "#define " << prefix << "FLAT_ACCESS(d,c,x,y) MINIPEAK_ACCESS_" << type_str << "(" << info_line.str() << ")" << std::endl;
+    ss << "#define " << prefix << "ACCESS(d,c,x,y) MINIPEAK_ACCESS_" << type_str << "(" << info_line.str() << ")" << std::endl;
+    ss << "#define " << prefix << "ACCESS_1D MINIPEAK_ACCESS_1D_" << type_str << std::endl;
+    
+    ss << "#define " << prefix << "STORE(d,c,x,y,v) MINIPEAK_STORE_" << type_str << "(" << info_line.str() << ",v)" << std::endl;
+    ss << "#define " << prefix << "STORE_1D MINIPEAK_STORE_1D_" << type_str << std::endl;            
+    ss << "#define " << prefix << "CIDX_TO_1D_IDX(c,idx) MINIPEAK_CIDX_TO_1D_IDX(c,idx," << (int)info.order << "," << c << "u," << w << "u," << h <<"u)" << std::endl;
+    
+    ss << "#define CR_" << prefix << "DATATYPE_IS_" << glsl_type(vec_size) << " 1" << std::endl;
     ss << "#define convert_" << prefix << " " << glsl_type(vec_size) << std::endl;
     ss << "#define " << prefix << "channels " << c << "u" << std::endl;
     ss << "#define " << prefix << "width " << (w/vec_size) << "u" << std::endl;

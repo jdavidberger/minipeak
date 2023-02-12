@@ -1,5 +1,6 @@
 #include <cassert>
 #include "minipeak/opengl/program.h"
+#include "src/opengl/data_access.glsl.h"
 
 static void delete_program(const GLuint *s)
 {
@@ -233,18 +234,26 @@ gl_ptr compile_shader(const std::string& name, const std::vector<std::string>& s
     buffers.push_back(preamble.c_str());
     lengths.push_back(preamble.size());
 
+
     if(getenv("CR_DEBUG_SHADERS")) {
       printf("// SHADER SOURCE: %s\n", name.c_str());
     }
 
+    auto data_access = std::string(data_access_glsl);
+    buffers.push_back(data_access.c_str());
+    lengths.push_back(data_access.size());
+    
     for(auto& s : source) {
         buffers.push_back(s.c_str());
         lengths.push_back(s.size());
-	if(getenv("CR_DEBUG_SHADERS")) {
-	  printf("%s\n", s.c_str());
-	}
     }
-    
+
+    for(auto& s : buffers) {
+      if(getenv("CR_DEBUG_SHADERS")) {
+	printf("%s\n", s);
+      }
+    }
+
     glShaderSource(*shader, buffers.size(), buffers.data(), lengths.data());
     glCompileShader(*shader);
 

@@ -87,7 +87,11 @@ add_library(minipeak-helpers STATIC src/gpu/BufferInfo.cpp src/gpu/Buffer.cpp sr
 target_include_directories(minipeak-helpers PUBLIC include)
 
 if(TARGET GLEW::GLEW)
-  add_library(minipeak-helpers-gl STATIC src/opengl/program.cpp src/opengl/buffer.cpp)
+    generate_headers(glsl_headers
+          src/opengl/data_access.glsl
+          )
+	
+  add_library(minipeak-helpers-gl STATIC src/opengl/program.cpp src/opengl/buffer.cpp ${glsl_headers})
   target_link_libraries(minipeak-helpers-gl GL GLEW::GLEW OpenGL::EGL glfw dl minipeak-helpers)
 endif()
 
