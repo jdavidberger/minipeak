@@ -235,7 +235,7 @@ gl_ptr compile_shader(const std::string& name, const std::vector<std::string>& s
     lengths.push_back(preamble.size());
 
 
-    if(getenv("CR_DEBUG_SHADERS")) {
+    if(getenv("MINIPEAK_DEBUG_SHADERS")) {
       printf("// SHADER SOURCE: %s\n", name.c_str());
     }
 
@@ -249,7 +249,7 @@ gl_ptr compile_shader(const std::string& name, const std::vector<std::string>& s
     }
 
     for(auto& s : buffers) {
-      if(getenv("CR_DEBUG_SHADERS")) {
+      if(getenv("MINIPEAK_DEBUG_SHADERS")) {
 	printf("%s\n", s);
       }
     }

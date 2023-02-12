@@ -60,4 +60,4 @@
 #define MINIPEAK_STORE_s4(d,c,x,y,orders,channels,width,height,v) d[MINIPEAK_IDX(c,x,y,orders,channels,width,height)/2u] = MINIPEAK_COMPRESS_PACKED_16_4(x)
 #define MINIPEAK_STORE_s2(d,c,x,y,orders,channels,width,height,v) d[MINIPEAK_IDX(c,x,y,orders,channels,width,height)/2u] = MINIPEAK_COMPRESS_PACKED_16_2(x)
 
-#define MINIPEAK_CIDX_TO_1D_IDX(c,idx,orders,channels,width,height) (c * (width) * (height) + idx)
+#define MINIPEAK_CIDX_TO_1D_IDX(c,idx,orders,channels,width,height) ((c) * (width * height) + (idx))
