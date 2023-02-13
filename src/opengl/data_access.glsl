@@ -12,6 +12,8 @@
 #define MINIPEAK_ACCESS_b MINIPEAK_ACCESS_NATIVE
 #define MINIPEAK_ACCESS_f MINIPEAK_ACCESS_NATIVE
 #define MINIPEAK_ACCESS_f2 MINIPEAK_ACCESS_NATIVE
+#define MINIPEAK_ACCESS_f3 MINIPEAK_ACCESS_NATIVE
+#define MINIPEAK_ACCESS_f4 MINIPEAK_ACCESS_NATIVE
 #define MINIPEAK_ACCESS_d MINIPEAK_ACCESS_NATIVE
 #define MINIPEAK_ACCESS_h MINIPEAK_ACCESS_NATIVE
 #define MINIPEAK_ACCESS_i MINIPEAK_ACCESS_NATIVE
@@ -42,6 +44,8 @@
 #define MINIPEAK_STORE_NATIVE(d,c,x,y,orders,channels,width,height,v) d[MINIPEAK_IDX(c,x,y,orders,channels,width,height)] = (v)
 #define MINIPEAK_STORE_b MINIPEAK_STORE_NATIVE
 #define MINIPEAK_STORE_f MINIPEAK_STORE_NATIVE
+#define MINIPEAK_STORE_f2 MINIPEAK_STORE_NATIVE
+#define MINIPEAK_STORE_f4 MINIPEAK_STORE_NATIVE
 #define MINIPEAK_STORE_d MINIPEAK_STORE_NATIVE
 #define MINIPEAK_STORE_h MINIPEAK_STORE_NATIVE
 
@@ -57,7 +61,7 @@
 #define MINIPEAK_STORE_1D_s4(d,idx,v) d[idx] = MINIPEAK_COMPRESS_PACKED_16_4((v))
 #define MINIPEAK_STORE_1D_s2(d,idx,v) d[idx] = MINIPEAK_COMPRESS_PACKED_16_2((v))
 
-#define MINIPEAK_STORE_s4(d,c,x,y,orders,channels,width,height,v) d[MINIPEAK_IDX(c,x,y,orders,channels,width,height)/2u] = MINIPEAK_COMPRESS_PACKED_16_4(x)
-#define MINIPEAK_STORE_s2(d,c,x,y,orders,channels,width,height,v) d[MINIPEAK_IDX(c,x,y,orders,channels,width,height)/2u] = MINIPEAK_COMPRESS_PACKED_16_2(x)
+#define MINIPEAK_STORE_s4(d,c,x,y,orders,channels,width,height,v) d[MINIPEAK_IDX(c,x,y,orders,channels,width,height)/2u] = MINIPEAK_COMPRESS_PACKED_16_4(ivec4(v))
+#define MINIPEAK_STORE_s2(d,c,x,y,orders,channels,width,height,v) d[MINIPEAK_IDX(c,x,y,orders,channels,width,height)/2u] = MINIPEAK_COMPRESS_PACKED_16_2(ivec2(v))
 
 #define MINIPEAK_CIDX_TO_1D_IDX(c,idx,orders,channels,width,height) ((c) * (width * height) + (idx))

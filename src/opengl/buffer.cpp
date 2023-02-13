@@ -114,7 +114,7 @@ std::string GLSLBuffer::glsl_type(int vec) const {
     //assert(vec == 1 || info.type == 'f');
     switch(info.type) {
         case 's':
-            if(vec > 1) {
+            if(vec > 2) {
                 return "ivec" + std::to_string(vec/2);
             }
             return has_int16 ? "int16_t" : "int";
