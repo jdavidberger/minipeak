@@ -18,9 +18,20 @@ PlatformSettingsFactory::PlatformSettingsFactory(const std::map<std::string, std
     }
 }
 
-PlatformSettings PlatformSettingsFactory::operator()(const std::string& platform) {
-    if(this->platform_settings.find(platform) != platform_settings.end()) {
-        return PlatformSettings(platform_settings[platform]);
+PlatformSettings PlatformSettingsFactory::operator()(const std::string& platform) const {
+    auto it = this->platform_settings.find(platform);
+    if(it == platform_settings.end())
+        it = platform_settings.find("");
+    if(it != platform_settings.end()) {
+        return {it->second};
     }
-    return PlatformSettings(platform_settings[""]);
+    return {};
+}
+
+std::map<std::string, PlatformSettings> PlatformSettingsFactory::operator()() const {
+    std::map<std::string, PlatformSettings> r;
+    for(auto& kv : platform_settings) {
+        r[kv.first] = kv.second;
+    }
+    return r;
 }

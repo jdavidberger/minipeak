@@ -3,6 +3,7 @@
 #include <map>
 #include <variant>
 #include <string>
+#include <vector>
 
 typedef std::map<std::string, std::variant<float, int, std::string>> platform_settings_t;
 class PlatformSettings {
@@ -30,5 +31,6 @@ class PlatformSettingsFactory {
     std::map<std::string, std::map<std::string, std::variant<float, int, std::string>>> platform_settings;
 public:
     PlatformSettingsFactory(const std::map<std::string, std::map<std::string, std::variant<float, int, std::string>>>&);
-    PlatformSettings operator()(const std::string& platform);
+    PlatformSettings operator()(const std::string& platform) const;
+    std::map<std::string, PlatformSettings> operator()() const;
 };
