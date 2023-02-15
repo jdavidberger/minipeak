@@ -20,6 +20,8 @@
 
 #define MINIPEAK_ACCESS_1D_NATIVE(d,idx) d[idx]
 #define MINIPEAK_ACCESS_1D_f MINIPEAK_ACCESS_1D_NATIVE
+#define MINIPEAK_ACCESS_1D_f2 MINIPEAK_ACCESS_1D_NATIVE
+#define MINIPEAK_ACCESS_1D_f4 MINIPEAK_ACCESS_1D_NATIVE
 
 #define MINIPEAK_PACKED_16_2_DTYPE int
 #define MINIPEAK_PACKED_16_4_DTYPE ivec2
@@ -51,6 +53,7 @@
 
 #define MINIPEAK_STORE_1D_NATIVE(d,idx,v) d[idx] = v
 #define MINIPEAK_STORE_1D_f4(d,idx,v) d[idx] = vec4(v)
+#define MINIPEAK_STORE_1D_f2(d,idx,v) d[idx] = vec2(v)
 #define MINIPEAK_STORE_1D_f(d,idx,v) d[idx] = float(v)
 
 
