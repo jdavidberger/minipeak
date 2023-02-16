@@ -21,6 +21,13 @@ OCL::Kernel::Kernel(const std::string &name, const std::vector<std::string> &sou
 
         throw error;
     }
+    auto build_info = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(context->device[0]);
+    if(build_info.size()) {
+        std::cerr
+                << "OpenCL build info " << name <<  std::endl
+                << build_info
+                << std::endl;
+    }
 
     try {
         kernel = cl::Kernel(program, name.c_str());
