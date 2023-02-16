@@ -4,26 +4,31 @@
 #include "minipeak/gpu/DeviceInfo.h"
 #include "minipeak/opencl/Kernel.h"
 
-#include "glslang/Public/ShaderLang.h"
+#include <sstream>
 
 #include "string"
 #include "timeit.h"
 
 static std::string source = R"18e3c792b59(
 // Avoiding auto-vectorize by using vector-width locked dependent code
+#pragma OPENCL EXTENSION cl_khr_fp16 : enable
 
 #undef MAD_4
 #undef MAD_16
 #undef MAD_64
 
+#if dtype == int 
+#define mad(a,b,c) ((a)*(b)+(c))
+#endif
+
 #define MAD_4(x, y)     x = mad(y, x, y);   y = mad(x, y, x);   x = mad(y, x, y);   y = mad(x, y, x);
 #define MAD_16(x, y)    MAD_4(x, y);        MAD_4(x, y);        MAD_4(x, y);        MAD_4(x, y);
 #define MAD_64(x, y)    MAD_16(x, y);       MAD_16(x, y);       MAD_16(x, y);       MAD_16(x, y);
 
-__kernel void compute_sp_v1(__global float *ptr, float _A)
+__kernel void compute_sp_v1(__global dtype *ptr, float _A)
 {
-    float x = _A;
-    float y = (float)get_local_id(0);
+    dtype x = _A;
+    dtype y = (dtype)get_local_id(0);
 
     for(int i=0; i<128; i++)
     {
@@ -33,10 +38,10 @@ __kernel void compute_sp_v1(__global float *ptr, float _A)
     ptr[get_global_id(0)] = y;
 }
 
-__kernel void compute_sp_v2(__global float *ptr, float _A)
+__kernel void compute_sp_v2(__global dtype *ptr, float _A)
 {
-    float2 x = (float2)(_A, (_A+1));
-    float2 y = (float2)get_local_id(0);
+    dtype2 x = (dtype2)(_A, (_A+1));
+    dtype2 y = (dtype2)get_local_id(0);
 
     for(int i=0; i<64; i++)
     {
@@ -46,10 +51,10 @@ __kernel void compute_sp_v2(__global float *ptr, float _A)
     ptr[get_global_id(0)] = (y.S0) + (y.S1);
 }
 
-__kernel void compute_sp_v4(__global float *ptr, float _A)
+__kernel void compute_sp_v4(__global dtype *ptr, float _A)
 {
-    float4 x = (float4)(_A, (_A+1), (_A+2), (_A+3));
-    float4 y = (float4)get_local_id(0);
+    dtype4 x = (dtype4)(_A, (_A+1), (_A+2), (_A+3));
+    dtype4 y = (dtype4)get_local_id(0);
 
     for(int i=0; i<32; i++)
     {
@@ -59,10 +64,10 @@ __kernel void compute_sp_v4(__global float *ptr, float _A)
     ptr[get_global_id(0)] = (y.S0) + (y.S1) + (y.S2) + (y.S3);
 }
 
-__kernel void compute_sp_v8(__global float *ptr, float _A)
+__kernel void compute_sp_v8(__global dtype *ptr, float _A)
 {
-    float8 x = (float8)(_A, (_A+1), (_A+2), (_A+3), (_A+4), (_A+5), (_A+6), (_A+7));
-    float8 y = (float8)get_local_id(0);
+    dtype8 x = (dtype8)(_A, (_A+1), (_A+2), (_A+3), (_A+4), (_A+5), (_A+6), (_A+7));
+    dtype8 y = (dtype8)get_local_id(0);
 
     for(int i=0; i<16; i++)
     {
@@ -72,20 +77,20 @@ __kernel void compute_sp_v8(__global float *ptr, float _A)
     ptr[get_global_id(0)] = (y.S0) + (y.S1) + (y.S2) + (y.S3) + (y.S4) + (y.S5) + (y.S6) + (y.S7);
 }
 
-__kernel void compute_sp_v16(__global float *ptr, float _A)
-{
-    float16 x = (float16)(_A, (_A+1), (_A+2), (_A+3), (_A+4), (_A+5), (_A+6), (_A+7),
-                    (_A+8), (_A+9), (_A+10), (_A+11), (_A+12), (_A+13), (_A+14), (_A+15));
-    float16 y = (float16)get_local_id(0);
+// __kernel void compute_sp_v16(__global dtype *ptr, float _A)
+// {
+//     dtype16 x = (dtype16)(_A, (_A+1), (_A+2), (_A+3), (_A+4), (_A+5), (_A+6), (_A+7),
+//                     (_A+8), (_A+9), (_A+10), (_A+11), (_A+12), (_A+13), (_A+14), (_A+15));
+//     dtype16 y = (dtype16)get_local_id(0);
 
-    for(int i=0; i<8; i++)
-    {
-        MAD_16(x, y);
-    }
+//     for(int i=0; i<8; i++)
+//     {
+//         MAD_16(x, y);
+//     }
 
-    float2 t = (y.S01) + (y.S23) + (y.S45) + (y.S67) + (y.S89) + (y.SAB) + (y.SCD) + (y.SEF);
-    ptr[get_global_id(0)] = t.S0 + t.S1;
-}
+//     dtype2 t = (y.S01) + (y.S23) + (y.S45) + (y.S67) + (y.S89) + (y.SAB) + (y.SCD) + (y.SEF);
+//     ptr[get_global_id(0)] = t.S0 + t.S1;
+// }
 )18e3c792b59";
 
 using namespace minipeak::gpu;
@@ -153,9 +158,17 @@ int main() {
     for(int i = 0;i < 3;i++) {
       std::cout << "Run size " << globalSize[i] << " " << localSize[i] << std::endl;
     }
-    auto kernels = {"compute_sp_v1", "compute_sp_v2", "compute_sp_v4", "compute_sp_v8", "compute_sp_v16"};
-    for(auto& k : kernels) {
-        auto kernel = OCL::Kernel(k, {source}, {buffer});
+    for( std::string dtype : {"half", "float", "double", "int"} ) {
+      
+      auto kernels = {"compute_sp_v1", "compute_sp_v2", "compute_sp_v4", "compute_sp_v8"};
+      for(auto& k : kernels) {
+
+	std::stringstream preamble;
+	preamble << "#define dtype " << dtype << std::endl;
+	preamble << "#define dtype2 " << dtype << "2" << std::endl;
+	preamble << "#define dtype4 " << dtype << "4" << std::endl;
+	preamble << "#define dtype8 " << dtype << "8" << std::endl;	
+        auto kernel = OCL::Kernel(k, {preamble.str() + source}, {buffer});
         cl_float A = -1e-5;
         kernel.kernel.setArg(1, A);
 
@@ -164,11 +177,12 @@ int main() {
         context->queue.finish();
 
         {
-            Timeit t(k, 4096  * (double)globalWIs / 1e9f, "GFLOPs");
-            do {
-                context->queue.enqueueNDRangeKernel(kernel.kernel, cl::NullRange, globalSize, localSize);
-                context->queue.finish();
-            } while(t.under(2));
+	  Timeit t(dtype + " " + k, 4096  * (double)globalWIs / 1e9f, "GFLOPs");
+	  do {
+	    context->queue.enqueueNDRangeKernel(kernel.kernel, cl::NullRange, globalSize, localSize);
+	    context->queue.finish();
+	  } while(t.under(2));
         }
+      }
     }
 }
