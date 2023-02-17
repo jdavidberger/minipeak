@@ -23,6 +23,9 @@ namespace OCL {
         virtual void sync() {
             context->queue.finish();
         }
+
+        virtual std::string key() const;
+        const PlatformSettingsFactory& settingsFactory() const;
     };
 
     class TileableNode : public Node {
@@ -35,5 +38,7 @@ namespace OCL {
 
         cl::NDRange global_size() const override;
         virtual cl::NDRange global_tile_size() const = 0;
+
+        std::string key() const override;
     };
 }

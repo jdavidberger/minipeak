@@ -17,6 +17,16 @@ void OCL::Node::operator()() {
 cl::NDRange OCL::Node::work_size() const {
     if(set_ws[0] != 0) return set_ws;
 
+    auto factory = settingsFactory();
+    auto platform_setting = factory(context->platform_name() + "_" + key());
+    auto key_setting = factory(key());
+    auto x = platform_setting("work_size_x", key_setting("work_size_x", 0));
+    auto y = platform_setting("work_size_y", key_setting("work_size_y", 1));
+    auto z = platform_setting("work_size_z", key_setting("work_size_z", 1));
+    if(x != 0) {
+        set_ws = cl::NDRange(x,y,z);
+        return set_ws;
+    }
 #ifdef cl_khr_suggested_local_work_size
 
 #endif
@@ -51,6 +61,16 @@ void OCL::Node::set_work_size(const cl::NDRange &ws) {
     }
 }
 
+std::string OCL::Node::key() const {
+    auto gws = global_size();
+    return std::to_string(gws[0]) + "x" + std::to_string(gws[1]) + "x" + std::to_string(gws[2]);
+}
+
+const PlatformSettingsFactory &OCL::Node::settingsFactory() const {
+    static PlatformSettingsFactory factory({});
+    return factory;
+}
+
 std::string OCL::TileableNode::preamble() const {
     std::stringstream ss;
     ss << "#define IS_TILED " << is_tiled << std::endl;
@@ -80,4 +100,9 @@ cl::NDRange OCL::TileableNode::global_size() const {
         auto gts = global_tile_size();
         return {gts[0] * gts[1] * gts[2], 1 ,1};
     }
+}
+
+std::string OCL::TileableNode::key() const {
+    auto gws = global_tile_size();
+    return std::to_string(gws[0]) + "x" + std::to_string(gws[1]) + "x" + std::to_string(gws[2]);
 }
