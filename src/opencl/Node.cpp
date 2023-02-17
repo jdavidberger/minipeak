@@ -18,7 +18,7 @@ cl::NDRange OCL::Node::work_size() const {
     if(set_ws[0] != 0) return set_ws;
 
 #ifdef cl_khr_suggested_local_work_size
-aef
+
 #endif
 
     auto run_size = global_size();
