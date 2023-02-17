@@ -48,12 +48,16 @@ void OCL::Buffer::stage_write(const void *src) {
     context->queue.enqueueWriteBuffer(*b, false, 0, info.buffer_size(), src);
 }
 
-std::string OCL::Buffer::cl_constants(const std::string &prefix, int vec_size) const {
+std::string OCL::Buffer::cl_constants(const std::string &_prefix, int vec_size) const {
     auto order = info.order;
     auto type = info.type;
     if ((info.w % vec_size) != 0) {
         throw std::runtime_error("Invalid vectorization size");
     }
+
+    auto prefix = _prefix;
+    if(!prefix.empty() && prefix[prefix.size()-1] != '_')
+        prefix = prefix + "_";
 
     std::stringstream ss;
     ss << "#define " << prefix << "dtype " << info.cl_type(vec_size) << std::endl;
