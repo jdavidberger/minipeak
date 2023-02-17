@@ -30,7 +30,7 @@ namespace OCL {
         bool is_tiled = true;
 
         TileableNode();
-        TileableNode(bool is_tiled);
+        explicit TileableNode(bool is_tiled);
         std::string preamble() const override;
 
         cl::NDRange global_size() const override;

@@ -47,8 +47,8 @@ bool OCL::Node::is_ws_valid(const cl::NDRange &ws) const {
 void OCL::Node::set_work_size(const cl::NDRange &ws) {
     if(ws[0] != 0) {
         assert(is_ws_valid(ws));
+        set_ws = ws;
     }
-    set_ws = ws;
 }
 
 std::string OCL::TileableNode::preamble() const {
