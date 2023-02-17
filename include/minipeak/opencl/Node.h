@@ -25,7 +25,7 @@ namespace OCL {
         }
 
         virtual std::string key() const;
-        const PlatformSettingsFactory& settingsFactory() const;
+        virtual const PlatformSettingsFactory& settingsFactory() const;
     };
 
     class TileableNode : public Node {
