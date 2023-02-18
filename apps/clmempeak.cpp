@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
             CL_USAGE_FLAG(output),
             CL_USAGE_FLAG(uniform),
             CL_USAGE_FLAG(host_available),	    
-            //CL_USAGE_FLAG(static),
+            CL_MEM_FLAG(CL_MEM_READ_ONLY),
     };
 
     int width = 128, height = 128;

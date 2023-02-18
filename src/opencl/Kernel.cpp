@@ -8,6 +8,14 @@ OCL::Kernel::Kernel(const std::string &name, const std::vector<std::string> &_so
     if(context->has_half()) {
       sources.insert(sources.begin(), "#pragma OPENCL EXTENSION cl_khr_fp16: enable\n");
     }
+
+    if(getenv("MINIPEAK_DEBUG_SHADERS")) {
+      printf("// SHADER SOURCE: %s\n", name.c_str());
+      for(auto& s : sources) {
+	printf("%s\n", s.c_str());
+      }
+    }
+
     program = cl::Program(context->context, sources);
 
     try {
