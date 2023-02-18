@@ -25,6 +25,7 @@ namespace OCL {
         void write(const void *src) override;
 
         std::string cl_constants(const std::string& prefix = "", int vec_size = 1) const;
+        std::string cl_constants(int vec_size = 1) const { return cl_constants("", vec_size); }
 
         void stage_read(void *dst) const override;
 

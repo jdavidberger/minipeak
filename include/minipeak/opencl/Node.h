@@ -29,8 +29,11 @@ namespace OCL {
     };
 
     class TileableNode : public Node {
+        mutable bool _is_tiled = true;
+        mutable bool _is_tiled_set = false;
     public:
-        bool is_tiled = true;
+        bool is_tiled() const;
+        void set_is_tiled(bool v) { _is_tiled_set = true; _is_tiled = v; }
 
         TileableNode();
         explicit TileableNode(bool is_tiled);

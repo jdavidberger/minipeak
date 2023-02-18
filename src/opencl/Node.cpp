@@ -73,9 +73,9 @@ const PlatformSettingsFactory &OCL::Node::settingsFactory() const {
 
 std::string OCL::TileableNode::preamble() const {
     std::stringstream ss;
-    ss << "#define IS_TILED " << is_tiled << std::endl;
+    ss << "#define IS_TILED " << is_tiled() << std::endl;
     auto gts = this->global_tile_size();
-    if(is_tiled) {
+    if(is_tiled()) {
         ss << "#define get_tile_x() get_global_id(0) " << std::endl;
         ss << "#define get_tile_y() get_global_id(1) " << std::endl;
         ss << "#define get_tile_z() get_global_id(2) " << std::endl;
@@ -89,12 +89,13 @@ std::string OCL::TileableNode::preamble() const {
     return ss.str();
 }
 
-OCL::TileableNode::TileableNode() {}
+OCL::TileableNode::TileableNode() {
+}
 
-OCL::TileableNode::TileableNode(bool is_tiled) : is_tiled(is_tiled){}
+OCL::TileableNode::TileableNode(bool is_tiled) : _is_tiled(is_tiled), _is_tiled_set(true) {}
 
 cl::NDRange OCL::TileableNode::global_size() const {
-    if(is_tiled) {
+    if(is_tiled()) {
         return global_tile_size();
     } else {
         auto gts = global_tile_size();
@@ -105,4 +106,16 @@ cl::NDRange OCL::TileableNode::global_size() const {
 std::string OCL::TileableNode::key() const {
     auto gws = global_tile_size();
     return std::to_string(gws[0]) + "x" + std::to_string(gws[1]) + "x" + std::to_string(gws[2]);
+}
+
+bool OCL::TileableNode::is_tiled() const {
+    if(_is_tiled_set == false) {
+        auto factory = settingsFactory();
+        auto platform_setting = factory(context->platform_name() + "_" + key());
+        auto key_setting = factory(key());
+
+        _is_tiled = platform_setting("tiled", key_setting("tiled", 0));
+        _is_tiled_set = true;
+    }
+    return _is_tiled;
 }
