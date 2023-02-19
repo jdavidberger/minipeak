@@ -116,7 +116,7 @@ namespace GPU {
             auto platform_setting = factory(platform_name() + "_" + key());
             auto key_setting = factory(key());
 
-            _is_tiled = (bool)platform_setting("tiled", key_setting("tiled", 0));
+            _is_tiled = (bool)platform_setting("tiled", key_setting("tiled", 1));
         }
         return _is_tiled.value();
     }
