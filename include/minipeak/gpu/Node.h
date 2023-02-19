@@ -16,16 +16,19 @@ struct DispatchRange : public std::array<int, 3>{
         virtual DispatchRange work_size() const;
         virtual void operator()() = 0;
 
-        void set_work_size(const DispatchRange& ws);
+        virtual void set_work_size(const DispatchRange& ws);
         bool is_ws_valid(const DispatchRange& ws) const;
 
         virtual bool is_built() const = 0;
         virtual void build() = 0;
+        virtual void reset_build() = 0;      
 
         virtual void sync() = 0;
         virtual int max_workgroup_size() const = 0;
+        virtual int max_effective_workgroup_size() const { return max_workgroup_size(); }
         virtual int preferred_work_group_size_multiple() const = 0;
-
+        virtual DispatchRange max_workgroup_count() const;
+      
         virtual std::string key() const;
         virtual const PlatformSettingsFactory& settingsFactory() const;
 
@@ -51,5 +54,6 @@ struct DispatchRange : public std::array<int, 3>{
         virtual GPU::DispatchRange global_tile_size() const = 0;
 
         std::string key() const override;
+      std::string name() const override;      
     };
 }

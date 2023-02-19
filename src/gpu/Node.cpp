@@ -49,10 +49,15 @@ namespace GPU {
         }
     }
 
+  DispatchRange Node::max_workgroup_count() const {
+    return DispatchRange(65535, 65535, 65535);    
+  }
+  
     bool Node::is_ws_valid(const DispatchRange &ws) const {
         auto gs = global_size();
+	auto max_gs = max_workgroup_count();	
         for(int i = 0;i < 3;i++) {
-            if((gs[i] % ws[i]) != 0)
+	  if((gs[i] % ws[i]) != 0 || (gs[i] / ws[i]) > max_gs[i])
                 return false;
         }
         return true;
@@ -83,9 +88,9 @@ namespace GPU {
             ss << "#define get_tile_z() get_global_id(2) " << std::endl;
             ss << "#define get_tile_idx() (get_global_id(0) + get_global_id(1) * " << (gts[0]) << "u + get_global_id(2) * " << (gts[0] * gts[1]) << "u) " << std::endl;
         } else {
-            ss << "#define get_tile_x() (get_global_id(0) % " << gts[0] << ") " << std::endl;
-            ss << "#define get_tile_y() ((get_global_id(0) / " << gts[0] << ") % " << gts[1] << ")" << std::endl;
-            ss << "#define get_tile_z() (get_global_id(0) / (" << gts[0] * gts[1] << "))" << std::endl;
+            ss << "#define get_tile_x() (get_global_id(0) % " << gts[0] << "u) " << std::endl;
+            ss << "#define get_tile_y() ((get_global_id(0) / " << gts[0] << "u) % " << gts[1] << "u)" << std::endl;
+            ss << "#define get_tile_z() (get_global_id(0) / (" << gts[0] * gts[1] << "u))" << std::endl;
             ss << "#define get_tile_idx() get_global_id(0)" << std::endl;
         }
         return ss.str();
@@ -108,6 +113,11 @@ namespace GPU {
     std::string TileableNode::key() const {
         auto gws = global_tile_size();
         return std::to_string(gws[0]) + "x" + std::to_string(gws[1]) + "x" + std::to_string(gws[2]);
+    }
+
+    std::string TileableNode::name() const {
+        auto gws = work_size();
+        return "Tiled: " + std::to_string(is_tiled()) + " " + std::to_string(gws[0]) + "x" + std::to_string(gws[1]) + "x" + std::to_string(gws[2]);
     }
 
     bool TileableNode::is_tiled() const {
