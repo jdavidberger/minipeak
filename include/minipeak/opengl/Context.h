@@ -1,0 +1,3 @@
+namespace OGL {
+    void EnsureGLContext();
+}

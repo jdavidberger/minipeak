@@ -2,46 +2,39 @@
 #include "memory"
 #include "Context.h"
 #include "Kernel.h"
+#include "minipeak/gpu/Node.h"
+
+
 
 namespace OCL {
-    class Node {
-    protected:
-        mutable cl::NDRange set_ws = {0};
+    cl::NDRange convert_range(GPU::DispatchRange range);
+
+    class Node : virtual public GPU::Node {
+
     public:
         std::shared_ptr<Context> context;
         Kernel kernel;
-        virtual cl::NDRange global_size() const = 0;
-        virtual cl::NDRange work_size() const;
-        virtual void operator()();
+
+        void operator()() override;
         Node() : context(Context::Inst()) {}
 
-        virtual std::string preamble() const { return ""; }
+        int preferred_work_group_size_multiple() const override;
+        int max_workgroup_size() const override;
 
-        void set_work_size(const cl::NDRange& ws);
-        bool is_ws_valid(const cl::NDRange& ws) const;
+        std::string platform_name() const override;
 
-        virtual void sync() {
+        std::string name() const override;
+
+        void sync() override {
             context->queue.finish();
         }
-
-        virtual std::string key() const;
-        virtual const PlatformSettingsFactory& settingsFactory() const;
+        bool is_built() const override { return (bool)kernel.kernel.get(); }
     };
 
-    class TileableNode : public Node {
-        mutable bool _is_tiled = true;
-        mutable bool _is_tiled_set = false;
-    public:
-        bool is_tiled() const;
-        void set_is_tiled(bool v) { _is_tiled_set = true; _is_tiled = v; }
+class TileableNode : virtual public Node, virtual public GPU::TileableNode {
+        public:
 
-        TileableNode();
-        explicit TileableNode(bool is_tiled);
-        std::string preamble() const override;
-
-        cl::NDRange global_size() const override;
-        virtual cl::NDRange global_tile_size() const = 0;
-
-        std::string key() const override;
+        TileableNode() : GPU::TileableNode() {}
+        explicit TileableNode(bool is_tiled) : GPU::TileableNode(is_tiled) {}
     };
 }

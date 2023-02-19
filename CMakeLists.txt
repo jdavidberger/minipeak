@@ -83,7 +83,7 @@ endmacro()
 include_directories(${CMAKE_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/filters/shaders)
 
-add_library(minipeak-helpers STATIC src/gpu/BufferInfo.cpp src/gpu/Buffer.cpp src/gpu/PlatformSettings.cpp)
+add_library(minipeak-helpers STATIC src/gpu/BufferInfo.cpp src/gpu/Buffer.cpp src/gpu/PlatformSettings.cpp src/gpu/Node.cpp)
 target_include_directories(minipeak-helpers PUBLIC include)
 
 if(TARGET GLEW::GLEW)
@@ -91,7 +91,11 @@ if(TARGET GLEW::GLEW)
           src/opengl/data_access.glsl
           )
 	
-  add_library(minipeak-helpers-gl STATIC src/opengl/program.cpp src/opengl/buffer.cpp ${glsl_headers})
+  add_library(minipeak-helpers-gl STATIC
+          src/opengl/program.cpp
+          src/opengl/buffer.cpp
+          src/opengl/Context.cpp
+          src/opengl/Node.cpp ${glsl_headers})
   target_link_libraries(minipeak-helpers-gl GL GLEW::GLEW OpenGL::EGL glfw dl minipeak-helpers)
 endif()
 
