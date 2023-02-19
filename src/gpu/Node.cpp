@@ -31,9 +31,10 @@ namespace GPU {
             next_local_size = next_local_size / range[i];
         }
 
+        set_ws = GPU::DispatchRange(range[0], range[1], range[2]);
         printf("Node %s has global size of %d, %d, %d and local size of %d, %d, %d (max of %d)\n", name().c_str(),
                run_size[0], run_size[1], run_size[2], range[0], range[1], range[2], max_local_size);
-        return set_ws = GPU::DispatchRange(range[0], range[1], range[2]);
+        return set_ws;
     }
 
     void Node::set_work_size(const DispatchRange &ws) {

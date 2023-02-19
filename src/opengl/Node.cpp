@@ -86,6 +86,6 @@ std::string OGL::TileableNode::preamble() const {
 }
 
 std::string OGL::TileableNode::name() const  {
-  return Node::name() + " " + GPU::TileableNode::name();
+    return Node::name() + " " + GPU::TileableNode::name();
 }
 

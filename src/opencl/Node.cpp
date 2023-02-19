@@ -36,6 +36,16 @@ int OCL::Node::preferred_work_group_size_multiple() const {
     return kernel.kernel.getWorkGroupInfo<CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE>(context->device[0]);
 }
 
+bool OCL::Node::is_built() const { return (bool)kernel.kernel.get(); }
+
+void OCL::Node::reset_build() {
+    kernel.kernel = 0;
+}
+
 cl::NDRange OCL::convert_range(GPU::DispatchRange range) {
     return cl::NDRange(range[0], range[1], range[2]);
+}
+
+std::string OCL::TileableNode::name() const {
+    return Node::name() + " " + GPU::TileableNode::name();
 }

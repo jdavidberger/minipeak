@@ -5,7 +5,7 @@
 
 namespace GPU {
 struct DispatchRange : public std::array<int, 3>{
-    DispatchRange(int x = 1, int y = 1, int z = 1);
+    DispatchRange(int x = 0, int y = 1, int z = 1);
     };
 
     struct Node {
