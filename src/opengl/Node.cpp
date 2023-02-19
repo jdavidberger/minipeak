@@ -46,7 +46,7 @@ std::string OGL::Node::preamble() const {
     ss << "#define LOCAL_SIZE_X " << std::get<0>(ws) << std::endl;
     ss << "#define LOCAL_SIZE_Y " << std::get<1>(ws) << std::endl;
     ss << "#define LOCAL_SIZE_Z " << std::get<2>(ws) << std::endl;
-
+    ss << "layout(local_size_x = LOCAL_SIZE_X, local_size_y = LOCAL_SIZE_Y, local_size_z = LOCAL_SIZE_Z) in;" << std::endl;
     return ss.str();
 }
 

@@ -81,7 +81,7 @@ namespace GPU {
             ss << "#define get_tile_x() get_global_id(0) " << std::endl;
             ss << "#define get_tile_y() get_global_id(1) " << std::endl;
             ss << "#define get_tile_z() get_global_id(2) " << std::endl;
-            ss << "#define get_tile_idx() (get_global_id(0) + get_global_id(1) * " << (gts[0]) << "+ get_global_id(2) * " << (gts[0] * gts[1]) << ") " << std::endl;
+            ss << "#define get_tile_idx() (get_global_id(0) + get_global_id(1) * " << (gts[0]) << "u + get_global_id(2) * " << (gts[0] * gts[1]) << "u) " << std::endl;
         } else {
             ss << "#define get_tile_x() (get_global_id(0) % " << gts[0] << ") " << std::endl;
             ss << "#define get_tile_y() ((get_global_id(0) / " << gts[0] << ") % " << gts[1] << ")" << std::endl;
