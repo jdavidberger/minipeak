@@ -2,6 +2,7 @@
 
 #include "string"
 #include "PlatformSettings.h"
+#include <optional>
 
 namespace GPU {
 struct DispatchRange : public std::array<int, 3>{

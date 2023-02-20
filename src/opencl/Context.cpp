@@ -4,7 +4,8 @@
 #include <iostream>
 
 static PlatformSettingsFactory factory( all_platform_settings_t ({
-    { "pthread-cortex-a53", {{"use-half", false}}}
+      { "pthread-cortex-a53", {{"use-half", false}}},
+      { "Mali-LODX r0p0", {{"use-half", false}}}    
 }));
 
 namespace OCL {
