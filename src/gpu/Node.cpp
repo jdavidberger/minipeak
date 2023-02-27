@@ -97,10 +97,13 @@ namespace GPU {
         return ss.str();
     }
 
-    TileableNode::TileableNode() {
-    }
+    // TileableNode::TileableNode() {
+    //   printf("Ctor1\n");
+    // }
 
-    TileableNode::TileableNode(bool is_tiled) : _is_tiled(is_tiled) {}
+    TileableNode::TileableNode(bool is_tiled) : _is_tiled(is_tiled) {
+
+    }
 
     GPU::DispatchRange TileableNode::global_size() const {
         if(is_tiled()) {

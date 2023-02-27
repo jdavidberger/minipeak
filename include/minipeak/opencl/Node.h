@@ -33,12 +33,12 @@ namespace OCL {
         void reset_build() override;
     };
 
-class TileableNode : virtual public Node, virtual public GPU::TileableNode {
+class TileableNode : virtual public Node, public GPU::TileableNode {
         public:
 
-        TileableNode() : GPU::TileableNode() {}
-        explicit TileableNode(bool is_tiled) : GPU::TileableNode(is_tiled) {}
+  //        TileableNode() : GPU::TileableNode() {}
+        explicit TileableNode(std::optional<bool> is_tiled) : GPU::TileableNode(is_tiled) {}
 
-    std::string name() const override;
+  std::string name() const override;
 };
 }

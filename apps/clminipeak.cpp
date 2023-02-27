@@ -158,7 +158,7 @@ int main() {
     for(int i = 0;i < 3;i++) {
       std::cout << "Run size " << globalSize[i] << " " << localSize[i] << std::endl;
     }
-    for( std::string dtype : {"half", "float", "double", "int"} ) {
+    for( std::string dtype : {"half", "float", "int", "short", "char"} ) {
       
       auto kernels = {"compute_sp_v1", "compute_sp_v2", "compute_sp_v4", "compute_sp_v8"};
       for(auto& k : kernels) {
