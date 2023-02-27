@@ -80,6 +80,7 @@ std::string OCL::Buffer::cl_constants(const std::string &_prefix, int vec_size) 
     ss << "#define " << prefix << "channels ((ushort)" << c << "u)" << std::endl;
     ss << "#define " << prefix << "width ((ushort)" << (w/vec_size) << "u)" << std::endl;
     ss << "#define " << prefix << "height ((ushort)" << h << "u)" << std::endl;
+    ss << "#define " << prefix << "vec_size " << vec_size << std::endl;
     return ss.str();
 }
 
