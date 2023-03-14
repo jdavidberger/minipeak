@@ -99,15 +99,6 @@ if(TARGET GLEW::GLEW)
   target_link_libraries(minipeak-helpers-gl GL GLEW::GLEW OpenGL::EGL glfw dl minipeak-helpers)
 endif()
 
-find_package(Vulkan)
-if(TARGET Vulkan::Vulkan)
-  add_library(minipeak-helpers-vk STATIC
-          src/vulkan/Context.cpp
-          src/vulkan/VBuffer.cpp
-          )
-  target_link_libraries(minipeak-helpers-vk Vulkan::Vulkan dl minipeak-helpers )
-endif()
-
 FIND_PACKAGE(OpenCL)
 IF(OpenCL_FOUND)
   add_library(minipeak-helpers-cl STATIC

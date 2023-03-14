@@ -39,6 +39,6 @@ class TileableNode : virtual public Node, public GPU::TileableNode {
   //        TileableNode() : GPU::TileableNode() {}
         explicit TileableNode(std::optional<bool> is_tiled) : GPU::TileableNode(is_tiled) {}
 
-  std::string name() const override;
+    std::string name() const override;
 };
 }

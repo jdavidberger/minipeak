@@ -46,6 +46,7 @@ struct DispatchRange : public std::array<int, 3>{
         bool is_tiled() const;
         void set_is_tiled(bool v) { _is_tiled = v; }
 
+        TileableNode() : TileableNode(std::optional<bool>()) {}
         explicit TileableNode(bool is_tiled);
         explicit TileableNode(std::optional<bool> is_tiled);
         std::string preamble() const override;

@@ -46,7 +46,7 @@ struct GLSLBuffer : public GPUBuffer {
     void read(void* dst) const override;
     void write(const void* src) override;
 
-    std::string glsl_constants(int vec = 1) const { return glsl_constants("", vec); }
+    std::string glsl_constants(int vec) const { return glsl_constants("", vec); }
     std::string glsl_constants(const std::string& prefix = "", int vec = 1) const;
 
     GLuint operator*() const { return *ptr; }
