@@ -30,7 +30,7 @@ namespace OGL {
     public:
         std::string preamble() const override;
 
-        TileableNode() : GPU::TileableNode() {}
+      //TileableNode() : GPU::TileableNode() {}
         explicit TileableNode(std::optional<bool> is_tiled) : GPU::TileableNode(is_tiled) {}
       std::string name() const override;
     };
