@@ -264,14 +264,16 @@ gl_ptr compile_shader(const std::string& name, const std::vector<std::string>& s
     {
         GLint il = 0;
         glGetShaderiv(*shader, GL_INFO_LOG_LENGTH, &il);
-        if (il > 1) {
+
+        for(size_t i = 0;i < buffers.size();i++) {
+            fprintf(stderr, "%s\n", buffers[i]);
+        }
+
+        if (il > 0) {
             std::vector<char> log;
             log.resize(il);
 
             glGetShaderInfoLog(*shader, il, 0x0, &log[0]);
-            for(size_t i = 0;i < buffers.size();i++) {
-                fprintf(stderr, "%s\n", buffers[i]);
-            }
             fprintf(stderr, "Error compiling shader '%s': \n%s", name.c_str(), &log[0]);
         }
         fprintf(stderr, "cannot compile shader\n");

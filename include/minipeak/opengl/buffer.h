@@ -51,4 +51,5 @@ struct GLSLBuffer : public GPUBuffer {
 
     GLuint operator*() const { return *ptr; }
 
+    void swap(GLSLBuffer &buffer);
 };

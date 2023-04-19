@@ -192,3 +192,11 @@ std::string GLSLBuffer::glsl_constants(const std::string& _prefix, int vec_size)
     ss << "#define " << prefix << "height " << h << "u" << std::endl;
     return ss.str();
 }
+
+void GLSLBuffer::swap(GLSLBuffer &buffer) {
+    //assert(info == buffer.info);
+    auto d = *buffer.ptr.get();
+    *buffer.ptr = *ptr.get();
+    *this->ptr = d;
+}
+
