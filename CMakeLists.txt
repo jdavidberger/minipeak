@@ -66,6 +66,7 @@ macro(generate_spv_header input)
           ARGS ${CREATE_HEADER_FILE} "${SPV_FILE}" "${HDR_FILE}"
           WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
           DEPENDS "${SPV_FILE}"
+
           COMMENT "Headerifying ${infile_name}")
 endmacro()
 
@@ -86,6 +87,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/filters/shaders)
 add_library(minipeak-helpers STATIC src/gpu/BufferInfo.cpp src/gpu/Buffer.cpp src/gpu/PlatformSettings.cpp src/gpu/Node.cpp)
 target_include_directories(minipeak-helpers PUBLIC include)
 
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/minipeak  DESTINATION include)
+
 if(TARGET GLEW::GLEW)
     generate_headers(glsl_headers
           src/opengl/data_access.glsl
@@ -97,6 +100,7 @@ if(TARGET GLEW::GLEW)
           src/opengl/Context.cpp
           src/opengl/Node.cpp ${glsl_headers})
   target_link_libraries(minipeak-helpers-gl GL GLEW::GLEW OpenGL::EGL glfw dl minipeak-helpers)
+  install(TARGETS minipeak-helpers-gl RUNTIME_DEPENDENCY_SET minipeak-helpers DESTINATION lib)
 endif()
 
 FIND_PACKAGE(OpenCL)
@@ -107,6 +111,8 @@ IF(OpenCL_FOUND)
           src/opencl/Node.cpp
           )
   target_link_libraries(minipeak-helpers-cl ${OpenCL_LIBRARY} minipeak-helpers dl )
+
+  install(TARGETS minipeak-helpers-cl RUNTIME_DEPENDENCY_SET minipeak-helpers DESTINATION lib)
 endif()
 
 add_subdirectory(apps)

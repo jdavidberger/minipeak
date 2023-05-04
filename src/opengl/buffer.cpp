@@ -24,10 +24,10 @@ GLSLBuffer::GLSLBuffer(const BufferInfo_t& info, bool persistent, bool bufferSto
     if(bufferStorage) {
         glBufferStorage(target(), buffer_size(), 0, flags);
 
-	if(persistent) {
-	  this->mapped_ptr = glMapBufferRange(target(), 0, buffer_size(), flags);
-	  assert(this->mapped_ptr);
-	}
+        if(persistent) {
+          this->mapped_ptr = glMapBufferRange(target(), 0, buffer_size(), flags);
+          assert(this->mapped_ptr);
+        }
 
     } else {
       glBufferData(target(), (GLsizeiptrARB) buffer_size(), nullptr, flags);
@@ -64,6 +64,12 @@ GLSLBuffer::GLSLBuffer(const BufferInfo_t &info) : GPUBuffer(info) {
             }
             glBufferData(target(), (GLsizeiptrARB) buffer_size(), nullptr, type);
         }
+    }
+
+    {
+        auto ptr = calloc(1, buffer_size());
+        write(ptr);
+        free(ptr);
     }
     glBindBuffer(target(), 0);
     assert(this->ptr);
