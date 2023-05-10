@@ -52,11 +52,13 @@ GLSLProgram::GLSLProgram(const std::vector<gl_ptr> &shaders) : shaders(shaders) 
     ptr = create_program(shaders);
 }
 
-void GLSLProgram::bind(const std::vector<GLSLBuffer>& input_buffers, const std::vector<GLSLBuffer>& output_buffers) {
+void GLSLProgram::bind(const std::vector<GLSLBuffer>& input_buffers, bool allow_null) {
     this->buffers = input_buffers;
-    this->buffers.insert(this->buffers.end(), output_buffers.begin(), output_buffers.end());
-    for(auto& b: buffers) {
-        assert(b.ptr);
+
+    if(!allow_null) {
+        for (auto &b: buffers) {
+            assert(b.ptr);
+        }
     }
 }
 
@@ -122,6 +124,8 @@ void GLSLProgram::draw(GLenum mode, GLsizei count) {
     use();
 
     for(size_t i = 0;i < buffers.size();i++) {
+        if(buffers[i].ptr == 0) continue;
+
         if(!buffers[i].info.is_static()) {
             glBindBuffer(GL_ARRAY_BUFFER, *buffers[i]);
             glEnableVertexAttribArray(
@@ -160,7 +164,8 @@ void GLSLProgram::draw() {
     use();
 
     for(size_t i = 0;i < buffers.size();i++) {
-        glBindBufferBase(buffers[i].target(), i, *buffers[i]);
+        if(buffers[i].ptr)
+            glBindBufferBase(buffers[i].target(), i, *buffers[i]);
     }
 
     if(VAO == 0) {
@@ -188,6 +193,15 @@ void free_texture(const GLuint* tex) {
 void GLSLProgram::write_texture(int width, int height, const void *data) {
     if(ptr == nullptr) return;
     use();
+
+    width = std::max(width, 1);
+    height = std::max(height, 1);
+    if(texture_width != width || texture_height != height) {
+        texture_width = width;
+        texture_height = height;
+        texture_ptr.reset();
+    }
+
     if(texture_ptr == nullptr) {
         GLuint texture = 0;
         glGenTextures(1, &texture);
@@ -208,7 +222,12 @@ void GLSLProgram::write_texture(int width, int height, const void *data) {
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, *texture_ptr);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, data);
+    if(data) {
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, data);
+    } else {
+        uint32_t empty = 0;
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, &empty);
+    }
     //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
     //glGenerateMipmap(GL_TEXTURE_2D);
 

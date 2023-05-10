@@ -1,5 +1,6 @@
 #pragma once
 
+#include "iostream"
 #include "sstream"
 #include <map>
 
@@ -12,6 +13,7 @@
 
 struct GLSLProgram {
     gl_ptr ptr;
+    int texture_width = 0, texture_height = 0;
     gl_ptr texture_ptr;
 
     GLuint VAO = 0;
@@ -22,7 +24,7 @@ struct GLSLProgram {
 
     GLSLProgram() = default;
     GLSLProgram(const std::vector<gl_ptr>& shaders);
-    void bind(const std::vector<GLSLBuffer>& input_buffers, const std::vector<GLSLBuffer>& output_buffers = {});
+    void bind(const std::vector<GLSLBuffer>& input_buffers, bool allow_null = false);
     void use();
 
     operator bool() const { return ptr.operator bool(); }
@@ -34,7 +36,13 @@ struct GLSLProgram {
     template <typename T>
     void set_uniform(const std::string& binding, T value) {
         if(ptr == nullptr) return;
-        set_uniform(glGetUniformLocation(*this->ptr, binding.c_str()), value);
+        use();
+        auto uniformLoc = glGetUniformLocation(*this->ptr, binding.c_str());
+        if(uniformLoc == -1) {
+            std::cerr << "Can not find uniform for " << binding << std::endl;
+        }
+        set_uniform(uniformLoc, value);
+        glUseProgram(0);
     }
     void draw(GLenum mode, GLsizei count);
     void draw();
