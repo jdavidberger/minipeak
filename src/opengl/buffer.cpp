@@ -179,7 +179,14 @@ std::string GLSLBuffer::glsl_constants(const std::string& _prefix, int vec_size)
     std::string vec_str = vec_size == 1 ? "" : std::to_string(vec_size);
     std::string type_str = std::string(1, info.type) + vec_str;
     std::stringstream ss;
-    ss << "#define " << prefix << "work_dtype " << work_type(vec_size) << std::endl;    
+    ss << "#define " << prefix << "work_dtype " << work_type(vec_size) << std::endl;
+
+    if(vec_size == 1) {
+        ss << "#define " << prefix << "work_dtype_access(x, n) (x)" << std::endl;
+    } else {
+        ss << "#define " << prefix << "work_dtype_access(x, n) ((x)[(n)])" << std::endl;
+    }
+
     ss << "#define " << prefix << "dtype " << glsl_type(vec_size) << std::endl;
     ss << "#define " << prefix << "vec_size " << vec_size << std::endl;    
     ss << "#define " << prefix << "order " << (int)order << std::endl;

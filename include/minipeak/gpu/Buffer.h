@@ -2,6 +2,8 @@
 
 #include "memory"
 #include "BufferInfo.h"
+#include <vector>
+#include <cassert>
 
 class GPUBuffer {
 protected:
@@ -21,6 +23,12 @@ public:
 
     virtual void read(void* dst) const = 0;
     virtual void write(const void* src) = 0;
+
+    void write_vector(const std::vector<float>& src) {
+        assert(info.type == 'f');
+        assert(src.size() * sizeof(float) == buffer_size());
+        write(src.data());
+    }
 
     virtual void stage_read(void* dst) const { read(dst); }
     virtual void stage_write(const void* src) { write(src); }

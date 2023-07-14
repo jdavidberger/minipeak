@@ -21,6 +21,7 @@ struct DispatchRange : public std::array<int, 3>{
         virtual void set_work_size(const DispatchRange& ws);
         bool is_ws_valid(const DispatchRange& ws) const;
 
+        void build_if_needed() const;
         virtual bool is_built() const = 0;
         virtual void build() = 0;
         virtual void reset_build() = 0;      
@@ -34,7 +35,8 @@ struct DispatchRange : public std::array<int, 3>{
         virtual std::string key() const;
         virtual const PlatformSettingsFactory& settingsFactory() const;
 
-        virtual std::string preamble() const { return ""; }
+        virtual bool debug_shader() const;
+        virtual std::string preamble() const;
 
         virtual std::string platform_name() const = 0;
         virtual std::string name() const = 0;

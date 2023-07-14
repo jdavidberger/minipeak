@@ -102,5 +102,3 @@ bool OCL::Buffer::host_can_write() const {
 
     return (flags & CL_MEM_HOST_NO_ACCESS) != CL_MEM_HOST_NO_ACCESS;
 }
-
-

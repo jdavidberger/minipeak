@@ -74,6 +74,24 @@ namespace GPU {
         return factory;
     }
 
+    std::string Node::preamble() const {
+        return debug_shader() ? "#define SHADER_DEBUG 1\n\n " : "";
+    }
+
+    bool Node::debug_shader() const {
+#ifdef NDEBUG
+        return false;
+#else
+        return true;
+#endif
+    }
+
+    void Node::build_if_needed() const {
+        if(!is_built()) {
+            const_cast<Node*>(this)->build();
+        }
+    }
+
     DispatchRange::DispatchRange(int x, int y, int z) : std::array<int, 3>({x, y, z}){
     }
 

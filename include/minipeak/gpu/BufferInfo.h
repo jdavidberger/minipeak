@@ -27,6 +27,8 @@ struct BufferInfo_t {
         return ((int)usage & (int)usage_t::uniform) > 0;
     }
     BufferInfo_t(const std::string& n, int type, int c, int w, int h, enum usage_t usage = usage_t::intermediate, order_t order = order_t::CHW);
+    BufferInfo_t(const std::string& n, int type, int c, int w, int h, order_t order) :
+            BufferInfo_t(n, type, c, w, h, usage_t::intermediate, order) {}
     BufferInfo_t(int type, int c, int w, int h, enum usage_t usage = usage_t::intermediate, order_t order = order_t::CHW);
     BufferInfo_t(int type, int c, int w, int h, order_t order) : BufferInfo_t(type, c, w, h, usage_t::intermediate, order) {}
     BufferInfo_t() = default;

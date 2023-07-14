@@ -72,7 +72,7 @@ void GLSLProgram::dispatch(uint64_t x, uint64_t  y, uint64_t z) {
     use();
 
     for(size_t i = 0;i < buffers.size();i++) {
-        glBindBufferBase(buffers[i].target(), i, *buffers[i]);
+        BindBuffer(i);
     }
     //glBindBuffersBase(GL_SHADER_STORAGE_BUFFER, 0, ssbos.size(), ssbos.data());
 
@@ -130,7 +130,7 @@ void GLSLProgram::draw(GLenum mode, GLsizei count) {
             glBindBuffer(GL_ARRAY_BUFFER, *buffers[i]);
             glEnableVertexAttribArray(
                     i); // Attribute indexes were received from calls to glGetAttribLocation, or passed into glBindAttribLocation.
-            glVertexAttribPointer(i, buffers[i].info.c, GL_FLOAT, false, 0,
+            glVertexAttribPointer(i, buffers[i].info.order == BufferInfo_t::order_t::HWC ? buffers[i].info.c : 1, GL_FLOAT, false, 0,
                                   nullptr); // texcoords_data is a float*, 2 per vertex, representing UV coordinates.
         } else {
             glBindBufferBase(buffers[i].target(), i, *buffers[i]);
@@ -233,6 +233,16 @@ void GLSLProgram::write_texture(int width, int height, const void *data) {
 
     glBindTexture( GL_TEXTURE_2D, 0);
     glUseProgram(0);
+}
+
+void GLSLProgram::BindBuffer(int buffer_idx) {
+//    int idx = glGetProgramResourceIndex(*ptr, GL_SHADER_STORAGE_BLOCK, buffers[buffer_idx].info.name.c_str());
+//    if(idx >= 0) {
+//        glShaderStorageBlockBinding(*ptr, idx, buffer_idx);
+//    }
+    if(buffers[buffer_idx]) {
+        glBindBufferBase(buffers[buffer_idx].target(), buffer_idx, *buffers[buffer_idx]);
+    }
 }
 
 static void delete_shader(const GLuint *s)

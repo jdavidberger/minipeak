@@ -81,6 +81,11 @@ std::string OGL::Node::preamble() const {
     return ss.str();
 }
 
+const std::vector<GLSLBuffer> &OGL::Node::available_buffers() const {
+    build_if_needed();
+    return program.buffers;
+}
+
 std::string OGL::TileableNode::preamble() const {
     return Node::preamble() + "\n" + GPU::TileableNode::preamble() + "\n";
 }

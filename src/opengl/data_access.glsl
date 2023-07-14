@@ -29,8 +29,13 @@
 #define MINIPEAK_EXPAND_PACKED_16_4(x) ivec4(uint(x[0]) & 0xffffu, (uint((x)[0]) >> 16u) & 0xffffu, uint(x[1]) & 0xffffu, (uint((x)[1]) >> 16u) & 0xffffu)
 #define MINIPEAK_EXPAND_PACKED_16_2(x) ivec2(uint(x) & 0xffffu, (uint((x)) >> 16u) & 0xffffu)
 
+#define MINIPEAK_EXPAND_PACKED_16_1_even(x) int(uint(x) & 0xffffu)
+#define MINIPEAK_EXPAND_PACKED_16_1_odd(x) int((uint((x)) >> 16u) & 0xffffu)
+
 #define MINIPEAK_ACCESS_1D_s4(d,idx) MINIPEAK_EXPAND_PACKED_16_4(d[idx])
 #define MINIPEAK_ACCESS_1D_s2(d,idx) MINIPEAK_EXPAND_PACKED_16_2(d[idx])
+//#define MINIPEAK_ACCESS_1D_s(d,idx) ((idx) % 2u == 0u ? MINIPEAK_EXPAND_PACKED_16_1_even(d[(idx) / 2u]) : MINIPEAK_EXPAND_PACKED_16_1_odd(d[(idx) / 2u]))
+#define MINIPEAK_ACCESS_1D_s(d,idx) (MINIPEAK_EXPAND_PACKED_16_2(d[(idx)/2])[idx%2])
 
 #define MINIPEAK_ACCESS_s4(d,c,x,y,orders,channels,width,height) MINIPEAK_EXPAND_PACKED_16_4(d[MINIPEAK_IDX(c,x,y,orders,channels,width,height)/2u])
 #define MINIPEAK_ACCESS_s2(d,c,x,y,orders,channels,width,height) MINIPEAK_EXPAND_PACKED_16_2(d[MINIPEAK_IDX(c,x,y,orders,channels,width,height)/2u])

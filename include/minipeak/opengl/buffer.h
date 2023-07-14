@@ -50,6 +50,6 @@ struct GLSLBuffer : public GPUBuffer {
     std::string glsl_constants(const std::string& prefix = "", int vec = 1) const;
 
     GLuint operator*() const { return *ptr; }
-
+    operator bool() const { return ptr != 0; }
     void swap(GLSLBuffer &buffer);
 };

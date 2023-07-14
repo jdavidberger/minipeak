@@ -37,13 +37,15 @@ struct GLSLProgram {
     void set_uniform(const std::string& binding, T value) {
         if(ptr == nullptr) return;
         use();
+
         auto uniformLoc = glGetUniformLocation(*this->ptr, binding.c_str());
         if(uniformLoc == -1) {
-            std::cerr << "Can not find uniform for " << binding << std::endl;
+            //std::cerr << "Can not find uniform for " << binding << std::endl;
         }
         set_uniform(uniformLoc, value);
         glUseProgram(0);
     }
+    void BindBuffer(int buffer_idx);
     void draw(GLenum mode, GLsizei count);
     void draw();
     void dispatch(uint64_t x = 1, uint64_t y = 1, uint64_t z = 1);

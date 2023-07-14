@@ -24,6 +24,8 @@ namespace OGL {
         void reset_build() override;
         void set_work_size(const GPU::DispatchRange& ws) override;      
         std::string preamble() const override;
+
+        virtual const std::vector<GLSLBuffer>& available_buffers() const;
     };
 
     class TileableNode : public Node, public GPU::TileableNode {
