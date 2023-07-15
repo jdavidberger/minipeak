@@ -3,6 +3,7 @@
 #include "algorithm"
 #include "numeric"
 #include "sstream"
+#include "iomanip"
 
 namespace GPU {
     DispatchRange Node::work_size() const {
@@ -139,7 +140,13 @@ namespace GPU {
 
     std::string TileableNode::name() const {
         auto gws = work_size();
-        return "Tiled: " + std::to_string(is_tiled()) + " " + std::to_string(gws[0]) + "x" + std::to_string(gws[1]) + "x" + std::to_string(gws[2]);
+	std::stringstream ss;
+	ss << "Tiled: " << is_tiled() << " "
+	   << std::setw(3) << gws[0] << " x"
+	   << std::setw(3) << gws[1] << " x"
+	   << std::setw(3) << gws[2];
+	
+        return ss.str();
     }
 
     bool TileableNode::is_tiled() const {
