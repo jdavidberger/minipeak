@@ -4,6 +4,7 @@
 #include "BufferInfo.h"
 #include <vector>
 #include <cassert>
+#include <opencv2/core/mat.hpp>
 
 class GPUBuffer {
 protected:
@@ -23,6 +24,16 @@ public:
 
     virtual void read(void* dst) const = 0;
     virtual void write(const void* src) = 0;
+
+    void write_mat(const cv::Mat& src, float int_scale = 1) {
+        if(src.elemSize() != sizeof(float)) {
+            cv::Mat out;
+            src.convertTo(out, CV_32F, 1./int_scale);
+            write_mat(out);
+            return;
+        }
+        write(src.data);
+    }
 
     void write_vector(const std::vector<float>& src) {
         assert(info.type == 'f');
