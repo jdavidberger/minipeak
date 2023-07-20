@@ -26,11 +26,34 @@ macro(generate_header input)
           DEPENDS ${infile} ${CMAKE_CURRENT_SOURCE_DIR}/create_header.py)
 endmacro()
 
+set(CREATE_SHADER_REGISTER_FILE ${CMAKE_CURRENT_SOURCE_DIR}/create_shader_register.py CACHE PATH "" FORCE)
+function(generate_shader_header input)
+  get_filename_component(infile ${input} ABSOLUTE)
+
+  SET(infile_build ${CMAKE_CURRENT_BINARY_DIR}/generated/${input})
+  SET(outfile_hpp ${infile_build}.cpp)
+
+  add_custom_command(OUTPUT ${outfile_hpp}
+          COMMAND ${PYTHON}
+          ARGS ${CREATE_SHADER_REGISTER_FILE} ${infile} ${CMAKE_CURRENT_BINARY_DIR}/generated/${input}.cpp
+          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+          DEPENDS ${infile} ${CREATE_SHADER_REGISTER_FILE})
+endfunction()
+
 macro(generate_headers OUT_NAME)
   set(RTN "")
   foreach(fn ${ARGN})
     generate_header(${fn})
     list(APPEND RTN ${CMAKE_CURRENT_BINARY_DIR}/generated/${fn}.h)
+  endforeach()
+  SET(${OUT_NAME} ${RTN})
+endmacro()
+
+macro(generate_shader_lib OUT_NAME)
+  set(RTN "")
+  foreach(fn ${ARGN})
+    generate_shader_header(${fn})
+    list(APPEND RTN ${CMAKE_CURRENT_BINARY_DIR}/generated/${fn}.cpp)
   endforeach()
   SET(${OUT_NAME} ${RTN})
 endmacro()
@@ -95,11 +118,12 @@ if(TARGET GLEW::GLEW)
           )
 	
   add_library(minipeak-helpers-gl STATIC
+          src/opengl/shaderdb.cpp
           src/opengl/program.cpp
           src/opengl/buffer.cpp
           src/opengl/Context.cpp
           src/opengl/Node.cpp ${glsl_headers})
-  target_link_libraries(minipeak-helpers-gl GL GLEW::GLEW OpenGL::EGL glfw dl minipeak-helpers)
+  target_link_libraries(minipeak-helpers-gl GL GLEW::GLEW OpenGL::EGL glfw dl minipeak-helpers crypto ssl)
   install(TARGETS minipeak-helpers-gl RUNTIME_DEPENDENCY_SET minipeak-helpers DESTINATION lib)
 endif()
 

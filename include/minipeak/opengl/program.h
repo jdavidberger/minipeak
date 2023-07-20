@@ -10,6 +10,7 @@
 #include <GL/gl.h>
 #include "array"
 #include "vector"
+#include "shaderdb.h"
 
 struct GLSLProgram {
     gl_ptr ptr;
@@ -23,6 +24,7 @@ struct GLSLProgram {
     GLsync _sync = 0;
 
     GLSLProgram() = default;
+    GLSLProgram(const std::vector<GLSLShaderDef>& shaders);
     GLSLProgram(const std::vector<gl_ptr>& shaders);
     void bind(const std::vector<GLSLBuffer>& input_buffers, bool allow_null = false);
     void use();

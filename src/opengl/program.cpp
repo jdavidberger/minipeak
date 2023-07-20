@@ -9,6 +9,11 @@ static void delete_program(const GLuint *s)
         glDeleteProgram(*s);
     }
 }
+
+GLSLProgram::GLSLProgram(const std::vector<GLSLShaderDef> &shaders) {
+    ptr = ShaderDB::g().Compile(shaders);
+}
+
 static gl_ptr create_program(const std::vector<gl_ptr>& shaders) {
     auto program = gl_ptr(new GLuint(glCreateProgram()), delete_program);
 
@@ -252,35 +257,40 @@ static void delete_shader(const GLuint *s)
     }
 }
 
-gl_ptr compile_shader(const std::string& name, const std::vector<std::string>& source, GLuint PROGRMA_TYPE) {
+gl_ptr compile_shader(const std::string& name, const std::vector<std::string>& _source, GLuint PROGRMA_TYPE) {
     gl_ptr shader(new GLuint(0), &delete_shader);
 
     *shader = glCreateShader(PROGRMA_TYPE);
-    std::vector<const GLchar*> buffers;
-    std::vector<GLint> lengths;
+
     std::string preamble = "#version 310 es\n";
 
-    buffers.push_back(preamble.c_str());
-    lengths.push_back(preamble.size());
-
-
+    std::vector<std::string> source = { preamble, data_access_glsl };
     if(getenv("MINIPEAK_DEBUG_SHADERS")) {
       printf("// SHADER SOURCE: %s\n", name.c_str());
     }
 
     auto data_access = std::string(data_access_glsl);
-    buffers.push_back(data_access.c_str());
-    lengths.push_back(data_access.size());
-    
-    for(auto& s : source) {
-        buffers.push_back(s.c_str());
-        lengths.push_back(s.size());
+
+    for(auto& s : _source) {
+        if(s.find("#include \"") == 0) {
+            auto file = std::string(s.c_str() + strlen("#include \""),
+                                    s.c_str() + s.rfind("\""));
+            auto lu = ShaderDB::g().getSource(file);
+            source.push_back(lu);
+        } else {
+            source.push_back(s);
+        }
     }
 
-    for(auto& s : buffers) {
+    std::vector<const GLchar*> buffers;
+    std::vector<GLint> lengths;
+
+    for(auto& s : source) {
       if(getenv("MINIPEAK_DEBUG_SHADERS")) {
-	printf("%s\n", s);
+          printf("%s\n", s.c_str());
       }
+      buffers.push_back(s.data());
+      lengths.push_back(s.length());
     }
 
     glShaderSource(*shader, buffers.size(), buffers.data(), lengths.data());
