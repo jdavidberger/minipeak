@@ -124,6 +124,7 @@ ShaderDB& ShaderDB::g() {
 }
 
 void ShaderDB::Register(const std::string &name, const std::vector<uint8_t> &src) {
+    printf("Registering binary '%s' of length %zu bytes\n", name.c_str(), src.size());
     binaries[name] = src;
 }
 
@@ -148,3 +149,10 @@ gl_ptr GLSLShaderDef::Compile() const {
 
 GLSLShaderDef::GLSLShaderDef(const std::string &name, const std::vector<std::string> &source, GLuint programType)
         : name(name), source(source), PROGRAM_TYPE(programType) {}
+
+void ShaderDB_Register(const std::string& name, const std::string& src) {
+    ShaderDB::g().Register(name, src);
+}
+void ShaderDB_Register(const std::string& name, const std::vector<uint8_t>& src) {
+    ShaderDB::g().Register(name, src);
+}

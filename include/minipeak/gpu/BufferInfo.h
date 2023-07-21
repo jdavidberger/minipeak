@@ -38,6 +38,7 @@ struct BufferInfo_t {
 
 
     size_t type_size() const;
+    size_t element_count() const;
     size_t buffer_size() const;
 
     bool is_static() const {

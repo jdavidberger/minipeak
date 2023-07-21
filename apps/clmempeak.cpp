@@ -64,7 +64,7 @@ int main(int argc, char **argv) {
                 v = 0xce;
             }
             if (buffer.host_can_write())
-                buffer.write(d.data());
+                buffer.write_vector(d);
 
             auto flags = buffer.b->getInfo<CL_MEM_FLAGS>();
             printf("%s: (flags 0x%x) %s \n", name.c_str(), flags, modifier);
@@ -79,7 +79,7 @@ int main(int argc, char **argv) {
             if (buffer.host_can_write()) {
                 Timeit t("\twrite", width * height * 4 / 1024. / 1024., "MBs");
                 do {
-                    buffer.write(d.data());
+                    buffer.write_vector(d);
                 } while (t.under(1));
             }
 

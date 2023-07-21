@@ -211,7 +211,7 @@ int main(int argc, char **argv) {
     for(auto& k : usages) {
       auto name = std::get<0>(k);
       auto buffer = GLSLBuffer(BufferInfo_t('f', 1, width, height), std::get<1>(k), std::get<2>(k), std::get<3>(k));
-        buffer.write(d.data());
+        buffer.write_vector(d);
         ignore_debug=true;
         printf("%s:\n", name.c_str());
         {
@@ -224,7 +224,7 @@ int main(int argc, char **argv) {
         {
             Timeit t("\twrite", width * height * 4 / 1024. / 1024., "MBs");
             do {
-                buffer.write(d.data());
+                buffer.write_vector(d);
             } while (t.under(1));
         }
         ignore_debug=false;

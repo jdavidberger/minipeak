@@ -29,8 +29,12 @@ size_t BufferInfo_t::type_size() const {
     }
 }
 
+size_t BufferInfo_t::element_count() const {
+    return w * h * c;
+}
+
 size_t BufferInfo_t::buffer_size() const {
-    return w * h * c * type_size();
+    return element_count() * type_size();
 }
 
 BufferInfo_t::BufferInfo_t(int type, int c, int w, int h, enum usage_t usage, BufferInfo_t::order_t order)

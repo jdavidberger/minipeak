@@ -55,7 +55,9 @@ macro(generate_shader_lib OUT_NAME)
     generate_shader_header(${fn})
     list(APPEND RTN ${CMAKE_CURRENT_BINARY_DIR}/generated/${fn}.cpp)
   endforeach()
-  SET(${OUT_NAME} ${RTN})
+
+  add_library(${OUT_NAME} SHARED ${RTN})
+  target_link_libraries(${OUT_NAME} minipeak-helpers-gl)
 endmacro()
 
 find_program(GLSLC glslc)

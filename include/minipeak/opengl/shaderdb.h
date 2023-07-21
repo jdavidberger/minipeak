@@ -35,3 +35,6 @@ public:
 
     gl_ptr Compile(const std::vector<GLSLShaderDef>& shaders);
 };
+
+void ShaderDB_Register(const std::string& name, const std::string& src);
+void ShaderDB_Register(const std::string& name, const std::vector<uint8_t>& src);

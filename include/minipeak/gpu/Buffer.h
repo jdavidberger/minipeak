@@ -20,6 +20,7 @@ public:
     GPUBuffer(const BufferInfo_t& info) : info(info) {}
 
     size_t type_size() const { return info.type_size(); }
+    size_t element_count() const { return info.element_count(); }
     size_t buffer_size() const { return info.buffer_size(); }
 
     virtual void read(void* dst) const = 0;
@@ -35,9 +36,10 @@ public:
         write(src.data);
     }
 
-    void write_vector(const std::vector<float>& src) {
-        assert(info.type == 'f');
-        assert(src.size() * sizeof(float) == buffer_size());
+    template <typename T>
+    void write_vector(const std::vector<T>& src) {
+        //assert(info.type == 'f');
+        assert(src.size() * sizeof(T) == buffer_size());
         write(src.data());
     }
 
