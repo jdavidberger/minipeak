@@ -29,14 +29,12 @@ gl_ptr ShaderDB::Compile(const std::vector<GLSLShaderDef> &shaders) {
     glGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &formats);
     GLenum binaryFormats[formats];
     glGetIntegerv(GL_PROGRAM_BINARY_FORMATS, reinterpret_cast<GLint *>(binaryFormats));
-
-    bool has_binary = false;
+    
     auto it = binaries.find(checksum);
 
     if(it != binaries.end()) {
         auto& binary = it->second;
         glProgramBinary(*program, binaryFormats[0], binary.data(), binary.size());
-        has_binary = true;
     } else if(FILE* fp = fopen(binary_file.c_str(), "rb")) {
         fseek(fp, 0, SEEK_END);
         GLint len = (GLint)ftell(fp);
@@ -48,17 +46,20 @@ gl_ptr ShaderDB::Compile(const std::vector<GLSLShaderDef> &shaders) {
 
         Register(checksum, program);
         return Compile(shaders);
-    } else {
-            for(auto& shader : shaders) {
-                glAttachShader(*program, *shader.Compile());
-            }
-
-            glLinkProgram(*program);
     }
-
+    
     GLint linked = 0;
     glGetProgramiv(*program, GL_LINK_STATUS, &linked);
+    bool has_binary = true;
+    if(!linked) {
+      has_binary = false;
+      for(auto& shader : shaders) {
+	glAttachShader(*program, *shader.Compile());
+      }
 
+      glLinkProgram(*program);
+      glGetProgramiv(*program, GL_LINK_STATUS, &linked);
+    }
 
     if (!linked)
     {
